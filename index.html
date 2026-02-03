@@ -7,8 +7,6 @@
 
   <meta name="theme-color" content="#0b1220">
   <meta name="description" content="Web-based water polo playbook: draw, move, animate, save, and share tactics." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%2369B3E7'/><stop offset='1' stop-color='%230b3f86'/></linearGradient></defs><circle cx='50' cy='50' r='46' fill='url(%23g)'/><text x='50' y='63' font-size='44' font-family='Arial' font-weight='700' text-anchor='middle' fill='white'>WP</text></svg>">
-
   <style>
     :root{
       --bg:#0b1220;
@@ -18,26 +16,26 @@
       --muted:#a9b5d6;
       --line:#223156;
       --accent:#69B3E7;
+
       --danger:#ff4d4d;
       --ok:#3ddc97;
 
       --poolTop:#0e4ea8;
       --poolBot:#0b3f86;
-      --white:#f6f7fb;
 
-      /* standard markings */
+      /* default marking colors */
       --twoM: rgba(255,199,44,.92);  /* yellow */
       --fiveM: rgba(255,77,77,.88);  /* red */
-      --sixM: rgba(246,247,251,.92); /* white (common) */
-      --sixMDash: rgba(246,247,251,.92);
+      --sixM: rgba(246,247,251,.92); /* white */
+      --white: rgba(246,247,251,.92);
     }
 
-    *{box-sizing:border-box}
+    *{ box-sizing:border-box; }
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background: radial-gradient(1200px 600px at 20% -10%, #1a2c5a 0%, var(--bg) 60%);
       color:var(--text);
+      background: radial-gradient(1200px 600px at 20% -10%, #1a2c5a 0%, var(--bg) 60%);
       height:100vh;
       display:flex;
       flex-direction:column;
@@ -105,23 +103,10 @@
     }
     button:hover, select:hover{ border-color:#2f4477 }
     button:active{ transform: translateY(1px); }
-
-    button.primary{
-      border-color: rgba(105,179,231,.55);
-      background: rgba(105,179,231,.14);
-    }
-    button.danger{
-      border-color: rgba(255,77,77,.55);
-      background: rgba(255,77,77,.12);
-    }
-    button.ok{
-      border-color: rgba(61,220,151,.55);
-      background: rgba(61,220,151,.12);
-    }
-    button.active{
-      outline:2px solid rgba(105,179,231,.55);
-      background: rgba(105,179,231,.18);
-    }
+    button.primary{ border-color: rgba(105,179,231,.55); background: rgba(105,179,231,.14); }
+    button.danger{ border-color: rgba(255,77,77,.55); background: rgba(255,77,77,.12); }
+    button.ok{ border-color: rgba(61,220,151,.55); background: rgba(61,220,151,.12); }
+    button.active{ outline:2px solid rgba(105,179,231,.55); background: rgba(105,179,231,.18); }
 
     .chip{
       display:flex;
@@ -153,7 +138,6 @@
       padding:12px;
       min-height:0;
     }
-
     .left{
       flex:1;
       min-width:0;
@@ -176,7 +160,7 @@
       padding:10px;
     }
 
-    /* CLEAN board + isolate fixes weird compositing */
+    /* The board */
     #boardWrap{
       position:relative;
       width:min(980px, 100%);
@@ -191,113 +175,16 @@
     }
     #boardWrap.vertical{ aspect-ratio: 1 / 2; }
 
-    /* Pool markings */
-    .poolLines{
-      position:absolute; inset:0;
-      pointer-events:none;
-    }
-    .poolLines::before{
+    /* Pool white border */
+    #boardWrap::before{
       content:"";
-      position:absolute; inset:3.5%;
+      position:absolute;
+      inset:3.5%;
       border:3px solid rgba(246,247,251,.92);
       border-radius:12px;
-    }
-
-    /* half line */
-    .halfLine{
-      position:absolute;
-      left:50%;
-      top:6%;
-      height:88%;
-      width:3px;
-      background: rgba(246,247,251,.92);
-      transform: translateX(-50%) translateZ(0);
-      will-change: transform;
       pointer-events:none;
+      z-index:1;
     }
-
-    /* goal “area boxes” (simple) */
-    .goalBoxL, .goalBoxR{
-      position:absolute;
-      top:22%;
-      height:56%;
-      width:12%;
-      border:3px solid rgba(246,247,251,.92);
-      border-radius:10px;
-      pointer-events:none;
-      transform: translateZ(0);
-      will-change: transform;
-    }
-    .goalBoxL{ left:3.5%; }
-    .goalBoxR{ right:3.5%; }
-
-    /* goal cage (frame + net illusion) */
-    .goalCage{
-      position:absolute;
-      top:36%;
-      height:28%;
-      width:5.5%;
-      pointer-events:none;
-      transform: translateZ(0);
-      will-change: transform;
-      filter: drop-shadow(0 8px 16px rgba(0,0,0,.25));
-    }
-    .goalCage.left{ left:2.2%; }
-    .goalCage.right{ right:2.2%; }
-
-    .goalCage .frame{
-      position:absolute; inset:0;
-      border:3px solid rgba(246,247,251,.95);
-      border-radius:8px;
-      background: rgba(0,0,0,.08);
-    }
-    .goalCage .net{
-      position:absolute; inset:3px;
-      border-radius:6px;
-      background:
-        linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px) 0 0/10px 10px,
-        linear-gradient(0deg, rgba(255,255,255,.14) 1px, transparent 1px) 0 0/10px 10px;
-      opacity:.65;
-    }
-
-    /* SAFE vertical lines (fixes the “dark rectangle” artifact) */
-    .markLine{
-      position:absolute;
-      top:6%;
-      height:88%;
-      width:3px;
-      pointer-events:none;
-      transform: translateZ(0);
-      will-change: transform;
-      backface-visibility:hidden;
-    }
-
-    /* 2m and 5m */
-    .twoM{ background: var(--twoM); }
-    .fiveM{ background: var(--fiveM); }
-
-    /* 6m line: dashed (common visual) */
-    .sixM{
-      background: linear-gradient(
-        to bottom,
-        var(--sixMDash) 0 10px,
-        rgba(255,255,255,0) 10px 18px
-      );
-      background-size: 100% 18px;
-      opacity: .92;
-    }
-
-    /* positions (percent-based, visual approximation) */
-    /* goal line is inset; these are “board marks” for tactics, not exact measurement rendering */
-    .twoM.left{ left: 7%; }
-    .twoM.right{ right: 7%; }
-
-    .fiveM.left{ left: 17%; }
-    .fiveM.right{ right: 17%; }
-
-    /* NEW 6m mark: between 5m and half (closer to half than 5) */
-    .sixM.left{ left: 21%; }
-    .sixM.right{ right: 21%; }
 
     canvas{
       position:absolute;
@@ -305,6 +192,7 @@
       width:100%;
       height:100%;
     }
+    #fieldCanvas{ z-index:1; pointer-events:none; } /* markings + cages */
     #drawCanvas{ z-index:2; }
     #uiCanvas{ z-index:3; pointer-events:none; }
 
@@ -327,19 +215,13 @@
       cursor:grab;
       border:2px solid rgba(255,255,255,.65);
       box-shadow: 0 10px 24px rgba(0,0,0,.25);
-      transform: translate(-50%, -50%) translateZ(0);
+      transform: translate(-50%, -50%);
       will-change: transform;
     }
     .token:active{ cursor:grabbing; }
 
-    .token.blue{
-      background: rgba(105,179,231,.92);
-      color:#081226;
-    }
-    .token.white{
-      background: rgba(246,247,251,.95);
-      color:#0b1220;
-    }
+    .token.blue{ background: rgba(105,179,231,.92); color:#081226; }
+    .token.white{ background: rgba(246,247,251,.95); color:#0b1220; }
     .token.ball{
       width:28px;height:28px;
       background: rgba(255,199,44,.98);
@@ -354,7 +236,7 @@
       pointer-events:none;
     }
 
-    /* Right panel with tabs */
+    /* Right panel */
     .right{
       width:380px;
       max-width:45vw;
@@ -368,14 +250,8 @@
       min-height:0;
     }
 
-    .tabs{
-      display:flex;
-      gap:8px;
-    }
-    .tabs button{
-      flex:1;
-      font-weight:900;
-    }
+    .tabs{ display:flex; gap:8px; }
+    .tabs button{ flex:1; font-weight:900; }
 
     .tabPane{
       display:none;
@@ -399,7 +275,6 @@
       align-items:center;
       flex-wrap:wrap;
     }
-    .row > * { flex: 1 1 auto; }
 
     .list{
       border:1px solid var(--line);
@@ -410,6 +285,7 @@
       min-height:0;
       flex:1;
     }
+
     .playItem{
       display:flex;
       justify-content:space-between;
@@ -430,12 +306,7 @@
       max-width:200px;
     }
     .miniBtns{ display:flex; gap:6px; }
-    .miniBtns button{
-      padding:6px 8px;
-      border-radius:10px;
-      font-size:12px;
-      font-weight:900;
-    }
+    .miniBtns button{ padding:6px 8px; border-radius:10px; font-size:12px; font-weight:900; }
 
     .ruleBox{
       border:1px solid rgba(255,255,255,.08);
@@ -443,22 +314,9 @@
       border-radius:14px;
       padding:10px;
     }
-    .ruleBox h3{
-      margin:0 0 6px 0;
-      font-size:13px;
-      letter-spacing:.2px;
-    }
-    .ruleBox ul{
-      margin:0;
-      padding-left:18px;
-      color:var(--text);
-    }
-    .ruleBox li{
-      margin:6px 0;
-      color:rgba(232,238,252,.92);
-      font-size:12.5px;
-      line-height:1.35;
-    }
+    .ruleBox h3{ margin:0 0 6px 0; font-size:13px; }
+    .ruleBox ul{ margin:0; padding-left:18px; }
+    .ruleBox li{ margin:6px 0; font-size:12.5px; line-height:1.35; }
 
     .footerNote{ font-size:11px; color:var(--muted); opacity:.9; }
 
@@ -502,7 +360,7 @@
 
     <div class="group">
       <button id="numbersBtn">Cap Numbers: On</button>
-      <span class="hint" style="padding:0 6px;">(dbl-click token to edit)</span>
+      <button id="editNumBtn" class="primary">Edit Selected #</button>
     </div>
 
     <div class="group">
@@ -517,36 +375,9 @@
   <section class="left">
     <div class="boardShell">
       <div id="boardWrap">
-        <div class="poolLines">
-          <div class="halfLine"></div>
-
-          <div class="goalBoxL"></div>
-          <div class="goalBoxR"></div>
-
-          <!-- Goal cages -->
-          <div class="goalCage left">
-            <div class="frame"></div>
-            <div class="net"></div>
-          </div>
-          <div class="goalCage right">
-            <div class="frame"></div>
-            <div class="net"></div>
-          </div>
-
-          <!-- SAFE “markLine” elements -->
-          <div class="markLine twoM left"></div>
-          <div class="markLine twoM right"></div>
-
-          <div class="markLine fiveM left"></div>
-          <div class="markLine fiveM right"></div>
-
-          <div class="markLine sixM left"></div>
-          <div class="markLine sixM right"></div>
-        </div>
-
+        <canvas id="fieldCanvas"></canvas>
         <canvas id="drawCanvas"></canvas>
         <canvas id="uiCanvas"></canvas>
-
         <div id="tokensLayer" class="tokensLayer"></div>
       </div>
     </div>
@@ -558,10 +389,12 @@
       <button id="tabRules">Rules Update</button>
     </div>
 
-    <!-- TAB 1: Playbook -->
     <div id="panePlay" class="tabPane active">
       <div class="panelTitle">Board options</div>
-      <div class="hint">Toggle markings, add tokens, save & share plays. (The 2m/5m/6m lines are now rendered in a “safe” way to prevent dark rectangle artifacts.)</div>
+      <div class="hint">
+        Markings + cages are now drawn on a background canvas (not divs), so the dark-rectangle bug is gone permanently.
+        <br>Hotkeys: <b>N</b> edit selected cap number • <b>Delete</b> remove selected.
+      </div>
 
       <div class="row">
         <div class="chip"><input id="toggleHalf" type="checkbox" checked><span>Half line</span></div>
@@ -573,6 +406,7 @@
       <div class="row">
         <div class="chip"><input id="swapLines" type="checkbox"><span>Swap 2m/5m colors</span></div>
         <div class="chip"><input id="toggleCages" type="checkbox" checked><span>Show cages</span></div>
+        <div class="chip"><input id="toggleAreas" type="checkbox" checked><span>Goal areas</span></div>
       </div>
 
       <div class="row">
@@ -610,46 +444,34 @@
       <div class="list" id="playsList"></div>
 
       <div class="footerNote">
-        • Draw: Arrow/Circle/Highlight. • Eraser deletes marks you touch. • Record captures token moves + drawings as steps.
+        • Arrow/Circle/Highlight draw on top • Eraser deletes strokes you touch • Record captures moves + marks as steps.
       </div>
     </div>
 
-    <!-- TAB 2: Rules Update -->
     <div id="paneRules" class="tabPane">
       <div class="panelTitle">Rules update / patch notes</div>
-      <div class="hint">
-        This tab is a quick “coach friendly” summary. Always confirm with your league’s book before games.
-      </div>
+      <div class="hint">Coach-friendly summary. Always confirm with your league’s rulebook.</div>
 
       <div class="ruleBox">
-        <h3>World Aquatics updates (2024–2025+)</h3>
+        <h3>New board features</h3>
         <ul>
-          <li><b>6m matters more</b>: new rules emphasize actions/privileges around the 6m area (e.g., free throw inside 6m can lead to a shot after moving outside 6m, depending on competition implementation).</li>
-          <li><b>Game flow changes</b>: possession/exclusion timing updates were introduced to speed play in the 2025 updates (league implementations vary).</li>
-          <li><b>Squads</b>: updated team list limits (commonly up to 14 with 2 goalkeepers).</li>
-          <li><b>Field length standardization</b> appears in the 2025 change summaries (often referenced as 25m).</li>
+          <li><b>6m line</b> toggle for modern shot situations.</li>
+          <li><b>Goal cages</b> and <b>goal areas</b> drawn consistently on the field.</li>
+          <li>Markings drawn on a canvas to avoid the “dark rectangle” bug entirely.</li>
         </ul>
       </div>
 
       <div class="ruleBox">
-        <h3>NCAA (2024–26) major emphasis</h3>
+        <h3>Common modern emphasis (varies by league)</h3>
         <ul>
-          <li><b>Goal-area emphasis</b>: defining/clarifying the goal area and attacker positioning rules near 2m (varies by code/season).</li>
-          <li><b>6m mark</b> is used to identify the area where a player may shoot immediately after being fouled (NCAA aligned this earlier; the mark remains important).</li>
-        </ul>
-      </div>
-
-      <div class="ruleBox">
-        <h3>What this board adds for “new rules”</h3>
-        <ul>
-          <li><b>6m lines</b> (toggle on/off) so you can draw modern shot situations.</li>
-          <li><b>Goal cages</b> so shot angles and screens make sense visually.</li>
-          <li><b>Rotation</b> for transition analysis end-to-end.</li>
+          <li><b>6m area</b> is a key reference point for shooting / advantage situations.</li>
+          <li><b>Faster transitions</b> and quicker restarts are emphasized in many competitions.</li>
+          <li><b>Clarified contact/positioning</b> near 2m in many codes.</li>
         </ul>
       </div>
 
       <div class="footerNote">
-        Tip: If your league uses different colors (or different marks), you can change them in CSS variables near the top.
+        If you tell me which rules you want (World Aquatics / NCAA / USAWP / NFHS), I’ll rewrite this tab to match exactly.
       </div>
     </div>
   </aside>
@@ -687,7 +509,7 @@ function fromB64Url(b64){
  * State
  ***********************/
 const state = {
-  mode: "move", // move | arrow | circle | highlight | eraser
+  mode: "move",
   strokeColor: "#69B3E7",
   strokeSize: 6,
   showNumbers: true,
@@ -713,7 +535,8 @@ const state = {
   show5m: true,
   show6m: true,
   swapped: false,
-  showCages: true
+  showCages: true,
+  showAreas: true
 };
 
 /***********************
@@ -721,8 +544,12 @@ const state = {
  ***********************/
 const boardWrap = document.getElementById("boardWrap");
 const tokensLayer = document.getElementById("tokensLayer");
-const drawCanvas = document.getElementById("drawCanvas");
-const uiCanvas = document.getElementById("uiCanvas");
+
+const fieldCanvas = document.getElementById("fieldCanvas");
+const drawCanvas  = document.getElementById("drawCanvas");
+const uiCanvas    = document.getElementById("uiCanvas");
+
+const fctx = fieldCanvas.getContext("2d");
 const dctx = drawCanvas.getContext("2d");
 const uctx = uiCanvas.getContext("2d");
 
@@ -743,6 +570,8 @@ const rotateBtn = document.getElementById("rotateBtn");
 const pngBtn = document.getElementById("pngBtn");
 
 const numbersBtn = document.getElementById("numbersBtn");
+const editNumBtn = document.getElementById("editNumBtn");
+
 const recordBtn = document.getElementById("recordBtn");
 const playBtn = document.getElementById("playBtn");
 const rewindBtn = document.getElementById("rewindBtn");
@@ -753,6 +582,7 @@ const toggle5m = document.getElementById("toggle5m");
 const toggle6m = document.getElementById("toggle6m");
 const swapLines = document.getElementById("swapLines");
 const toggleCages = document.getElementById("toggleCages");
+const toggleAreas = document.getElementById("toggleAreas");
 
 const addBlueBtn = document.getElementById("addBlueBtn");
 const addWhiteBtn = document.getElementById("addWhiteBtn");
@@ -775,13 +605,6 @@ const tabRules = document.getElementById("tabRules");
 const panePlay = document.getElementById("panePlay");
 const paneRules = document.getElementById("paneRules");
 
-// pool elements
-const elHalf = boardWrap.querySelector(".halfLine");
-const el2m = [...boardWrap.querySelectorAll(".twoM")];
-const el5m = [...boardWrap.querySelectorAll(".fiveM")];
-const el6m = [...boardWrap.querySelectorAll(".sixM")];
-const cages = [...boardWrap.querySelectorAll(".goalCage")];
-
 /***********************
  * Tabs
  ***********************/
@@ -802,17 +625,131 @@ function resizeCanvases(){
   const rect = boardWrap.getBoundingClientRect();
   const w = Math.max(2, Math.floor(rect.width * devicePixelRatio));
   const h = Math.max(2, Math.floor(rect.height * devicePixelRatio));
-  for (const c of [drawCanvas, uiCanvas]){
-    c.width = w;
-    c.height = h;
+  for (const c of [fieldCanvas, drawCanvas, uiCanvas]){
+    c.width = w; c.height = h;
   }
-  redrawAll();
+  redrawField();
+  redrawAllMarks();
 }
 new ResizeObserver(resizeCanvases).observe(boardWrap);
 window.addEventListener("resize", resizeCanvases);
 
 /***********************
- * Formations / Tokens
+ * Field drawing (THIS REMOVES THE RECTANGLE BUG)
+ ***********************/
+function cssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function redrawField(){
+  const w = fieldCanvas.width;
+  const h = fieldCanvas.height;
+
+  fctx.setTransform(1,0,0,1,0,0);
+  fctx.clearRect(0,0,w,h);
+
+  // helper: draw vertical line with safe stroke
+  function vLine(xPct, style, widthPx, dashed=false){
+    const x = (xPct/100) * w;
+    fctx.save();
+    fctx.strokeStyle = style;
+    fctx.lineWidth = widthPx * devicePixelRatio;
+    fctx.lineCap = "butt";
+    if (dashed) fctx.setLineDash([10*devicePixelRatio, 8*devicePixelRatio]);
+    fctx.beginPath();
+    fctx.moveTo(x, 0.06*h);
+    fctx.lineTo(x, 0.94*h);
+    fctx.stroke();
+    fctx.restore();
+  }
+
+  // half line
+  if (state.showHalf){
+    vLine(50, cssVar("--white") || "rgba(246,247,251,.92)", 3, false);
+  }
+
+  // 2m/5m/6m (approx visual marks)
+  const twoCol  = state.swapped ? (cssVar("--fiveM") || "rgba(255,77,77,.88)") : (cssVar("--twoM") || "rgba(255,199,44,.92)");
+  const fiveCol = state.swapped ? (cssVar("--twoM") || "rgba(255,199,44,.92)") : (cssVar("--fiveM") || "rgba(255,77,77,.88)");
+  const sixCol  = cssVar("--sixM") || "rgba(246,247,251,.92)";
+
+  if (state.show2m){
+    vLine(7,  twoCol, 3, false);
+    vLine(93, twoCol, 3, false);
+  }
+  if (state.show5m){
+    vLine(17, fiveCol, 3, false);
+    vLine(83, fiveCol, 3, false);
+  }
+  if (state.show6m){
+    vLine(21, sixCol, 3, true);
+    vLine(79, sixCol, 3, true);
+  }
+
+  // goal areas (simple boxes)
+  if (state.showAreas){
+    const inset = 0.035;
+    const top = 0.22*h, boxH = 0.56*h, boxW = 0.12*w;
+    fctx.save();
+    fctx.strokeStyle = cssVar("--white") || "rgba(246,247,251,.92)";
+    fctx.lineWidth = 3*devicePixelRatio;
+    fctx.beginPath();
+    fctx.roundRect(inset*w, top, boxW, boxH, 10*devicePixelRatio);
+    fctx.roundRect(w - inset*w - boxW, top, boxW, boxH, 10*devicePixelRatio);
+    fctx.stroke();
+    fctx.restore();
+  }
+
+  // cages (frame + net) — drawn identical both sides
+  if (state.showCages){
+    const cageTop = 0.36*h;
+    const cageH   = 0.28*h;
+    const cageW   = 0.055*w;
+    const leftX   = 0.022*w;
+    const rightX  = w - 0.022*w - cageW;
+
+    function cage(x){
+      fctx.save();
+      // frame
+      fctx.strokeStyle = "rgba(246,247,251,.95)";
+      fctx.lineWidth = 3*devicePixelRatio;
+      fctx.fillStyle = "rgba(0,0,0,.10)";
+      fctx.beginPath();
+      fctx.roundRect(x, cageTop, cageW, cageH, 8*devicePixelRatio);
+      fctx.fill();
+      fctx.stroke();
+
+      // net (grid)
+      fctx.globalAlpha = 0.55;
+      fctx.strokeStyle = "rgba(255,255,255,.22)";
+      fctx.lineWidth = 1*devicePixelRatio;
+
+      const step = 10*devicePixelRatio;
+      // vertical lines
+      for (let xx = x + 3*devicePixelRatio; xx < x + cageW - 3*devicePixelRatio; xx += step){
+        fctx.beginPath();
+        fctx.moveTo(xx, cageTop + 3*devicePixelRatio);
+        fctx.lineTo(xx, cageTop + cageH - 3*devicePixelRatio);
+        fctx.stroke();
+      }
+      // horizontal lines
+      for (let yy = cageTop + 3*devicePixelRatio; yy < cageTop + cageH - 3*devicePixelRatio; yy += step){
+        fctx.beginPath();
+        fctx.moveTo(x + 3*devicePixelRatio, yy);
+        fctx.lineTo(x + cageW - 3*devicePixelRatio, yy);
+        fctx.stroke();
+      }
+
+      fctx.restore();
+    }
+
+    cage(leftX);
+    cage(rightX);
+  }
+}
+
+/***********************
+ * Tokens & formations
  ***********************/
 function formation6v6(){
   const tokens = [];
@@ -875,6 +812,7 @@ function renderTokens(){
     tokensLayer.appendChild(el);
   }
 }
+
 function updateTokenNumbers(){
   document.querySelectorAll(".token").forEach(el=>{
     const id = el.dataset.id;
@@ -885,7 +823,7 @@ function updateTokenNumbers(){
 }
 
 /***********************
- * Drawing
+ * Mark drawing
  ***********************/
 function clearCanvas(ctx){
   ctx.setTransform(1,0,0,1,0,0);
@@ -940,7 +878,8 @@ function drawHighlight(ctx, points, color, size){
   ctx.stroke();
   ctx.restore();
 }
-function redrawAll(){
+
+function redrawAllMarks(){
   clearCanvas(dctx);
   clearCanvas(uctx);
   for (const m of state.marks){
@@ -1047,7 +986,7 @@ function rewindPlayback(){
   if (state.originalForRewind){
     applyTokenSnapshot(state.originalForRewind.tokens);
     state.marks = deepClone(state.originalForRewind.marks);
-    redrawAll();
+    redrawAllMarks();
   }
 }
 function playbackLoop(){
@@ -1076,7 +1015,7 @@ function playbackLoop(){
     }
     if (step.addedMarks && step.addedMarks.length){
       for (const m of step.addedMarks) state.marks.push(m);
-      redrawAll();
+      redrawAllMarks();
     }
     state.playIndex += 1;
     state.playT0 = now();
@@ -1115,47 +1054,31 @@ numbersBtn.addEventListener("click", ()=>{
 });
 
 /***********************
- * Markings toggles + swap colors
+ * Markings toggles / swap -> redrawField()
  ***********************/
-function applyLineVisibility(){
-  elHalf.style.display = state.showHalf ? "block" : "none";
-  el2m.forEach(x=> x.style.display = state.show2m ? "block" : "none");
-  el5m.forEach(x=> x.style.display = state.show5m ? "block" : "none");
-  el6m.forEach(x=> x.style.display = state.show6m ? "block" : "none");
-  cages.forEach(x=> x.style.display = state.showCages ? "block" : "none");
-}
 function applySwap(){
-  const root = document.documentElement;
-  if (state.swapped){
-    root.style.setProperty("--twoM", "rgba(255,77,77,.88)");
-    root.style.setProperty("--fiveM", "rgba(255,199,44,.92)");
-  } else {
-    root.style.setProperty("--twoM", "rgba(255,199,44,.92)");
-    root.style.setProperty("--fiveM", "rgba(255,77,77,.88)");
-  }
+  // swap is implemented in redrawField by choosing colors
+  redrawField();
 }
-toggleHalf.addEventListener("change", ()=>{ state.showHalf = toggleHalf.checked; applyLineVisibility(); });
-toggle2m.addEventListener("change", ()=>{ state.show2m = toggle2m.checked; applyLineVisibility(); });
-toggle5m.addEventListener("change", ()=>{ state.show5m = toggle5m.checked; applyLineVisibility(); });
-toggle6m.addEventListener("change", ()=>{ state.show6m = toggle6m.checked; applyLineVisibility(); });
-toggleCages.addEventListener("change", ()=>{ state.showCages = toggleCages.checked; applyLineVisibility(); });
-
-swapLines.addEventListener("change", ()=>{
-  state.swapped = swapLines.checked;
-  applySwap();
-});
+toggleHalf.addEventListener("change", ()=>{ state.showHalf = toggleHalf.checked; redrawField(); });
+toggle2m.addEventListener("change", ()=>{ state.show2m = toggle2m.checked; redrawField(); });
+toggle5m.addEventListener("change", ()=>{ state.show5m = toggle5m.checked; redrawField(); });
+toggle6m.addEventListener("change", ()=>{ state.show6m = toggle6m.checked; redrawField(); });
+toggleCages.addEventListener("change", ()=>{ state.showCages = toggleCages.checked; redrawField(); });
+toggleAreas.addEventListener("change", ()=>{ state.showAreas = toggleAreas.checked; redrawField(); });
+swapLines.addEventListener("change", ()=>{ state.swapped = swapLines.checked; applySwap(); });
 
 /***********************
  * Undo / Clear / PNG
  ***********************/
 undoBtn.addEventListener("click", ()=>{
   state.marks.pop();
-  redrawAll();
+  redrawAllMarks();
 });
 clearBtn.addEventListener("click", ()=>{
   state.marks = [];
   state.recordedSteps = [];
-  redrawAll();
+  redrawAllMarks();
 });
 
 pngBtn.addEventListener("click", ()=>{
@@ -1167,45 +1090,29 @@ pngBtn.addEventListener("click", ()=>{
   tmp.width = w; tmp.height = h;
   const ctx = tmp.getContext("2d");
 
+  // pool background
+  const topCol = getComputedStyle(document.documentElement).getPropertyValue("--poolTop").trim() || "#0e4ea8";
+  const botCol = getComputedStyle(document.documentElement).getPropertyValue("--poolBot").trim() || "#0b3f86";
   const grad = ctx.createLinearGradient(0,0,0,h);
-  grad.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue("--poolTop").trim() || "#0e4ea8");
-  grad.addColorStop(1, getComputedStyle(document.documentElement).getPropertyValue("--poolBot").trim() || "#0b3f86");
+  grad.addColorStop(0, topCol);
+  grad.addColorStop(1, botCol);
   ctx.fillStyle = grad;
   ctx.fillRect(0,0,w,h);
 
-  // Draw markings roughly (optional): we keep it clean + readable
-  // Draw 2m/5m/6m/hall lines as simple lines for export
-  const drawVLine = (xPct, style, width=3)=>{
-    const x = (xPct/100)*w;
-    ctx.save();
-    ctx.strokeStyle = style;
-    ctx.lineWidth = width*devicePixelRatio;
-    ctx.beginPath();
-    ctx.moveTo(x, 0.06*h);
-    ctx.lineTo(x, 0.94*h);
-    ctx.stroke();
-    ctx.restore();
-  };
-  if (state.showHalf) drawVLine(50, "rgba(246,247,251,.9)", 3);
+  // border (matches ::before)
+  ctx.save();
+  ctx.strokeStyle = "rgba(246,247,251,.92)";
+  ctx.lineWidth = 3*devicePixelRatio;
+  const inset = 0.035;
+  ctx.beginPath();
+  ctx.roundRect(inset*w, inset*h, w-2*inset*w, h-2*inset*h, 12*devicePixelRatio);
+  ctx.stroke();
+  ctx.restore();
 
-  if (state.show2m){
-    drawVLine(7, getComputedStyle(document.documentElement).getPropertyValue("--twoM").trim() || "rgba(255,199,44,.9)", 3);
-    drawVLine(93, getComputedStyle(document.documentElement).getPropertyValue("--twoM").trim() || "rgba(255,199,44,.9)", 3);
-  }
-  if (state.show5m){
-    drawVLine(17, getComputedStyle(document.documentElement).getPropertyValue("--fiveM").trim() || "rgba(255,77,77,.85)", 3);
-    drawVLine(83, getComputedStyle(document.documentElement).getPropertyValue("--fiveM").trim() || "rgba(255,77,77,.85)", 3);
-  }
-  if (state.show6m){
-    // dashed look
-    ctx.save();
-    ctx.setLineDash([10*devicePixelRatio, 8*devicePixelRatio]);
-    drawVLine(21, "rgba(246,247,251,.9)", 3);
-    drawVLine(79, "rgba(246,247,251,.9)", 3);
-    ctx.restore();
-  }
+  // field markings
+  ctx.drawImage(fieldCanvas, 0, 0);
 
-  // marks
+  // marks drawn
   ctx.drawImage(drawCanvas, 0, 0);
 
   // tokens
@@ -1248,7 +1155,7 @@ pngBtn.addEventListener("click", ()=>{
 });
 
 /***********************
- * Add/remove tokens + select token
+ * Add/remove tokens + selection
  ***********************/
 function addToken(team){
   const numDefault = (team==="ball") ? "●" : String((state.tokens.filter(t=>t.team===team).length % 13) + 1);
@@ -1273,16 +1180,39 @@ tokensLayer.addEventListener("pointerdown", (evt)=>{
   renderTokens();
 });
 
-// double click token to edit cap number
-tokensLayer.addEventListener("dblclick", (evt)=>{
-  const tokenEl = evt.target.closest(".token");
-  if (!tokenEl) return;
-  const t = state.tokens.find(x=>x.id===tokenEl.dataset.id);
-  if (!t || t.team==="ball") return;
+// Reliable number editing: button + hotkey + dblclick
+function editSelectedNumber(){
+  if (!state.selectedTokenId) return;
+  const t = state.tokens.find(x=>x.id===state.selectedTokenId);
+  if (!t || t.team === "ball") return;
+
   const val = prompt("Cap number:", t.num || "");
   if (val === null) return;
   t.num = val.trim();
   renderTokens();
+}
+editNumBtn.addEventListener("click", editSelectedNumber);
+
+tokensLayer.addEventListener("dblclick", (evt)=>{
+  const tokenEl = evt.target.closest(".token");
+  if (!tokenEl) return;
+  state.selectedTokenId = tokenEl.dataset.id;
+  renderTokens();
+  editSelectedNumber();
+});
+
+// hotkeys
+window.addEventListener("keydown", (e)=>{
+  if (e.key === "Delete" || e.key === "Backspace"){
+    if (state.selectedTokenId){
+      state.tokens = state.tokens.filter(t=>t.id !== state.selectedTokenId);
+      state.selectedTokenId = null;
+      renderTokens();
+    }
+  }
+  if (e.key.toLowerCase() === "n"){
+    editSelectedNumber();
+  }
 });
 
 resetFormationBtn.addEventListener("click", ()=>{
@@ -1294,7 +1224,7 @@ resetFormationBtn.addEventListener("click", ()=>{
   if (v==="6on5") state.tokens = formation6on5();
   if (v==="5on6") state.tokens = formation5on6();
   if (v==="empty") state.tokens = formationEmpty();
-  redrawAll();
+  redrawAllMarks();
   renderTokens();
 });
 
@@ -1359,7 +1289,7 @@ function beginDraw(evt){
     const hitRadius = 14 * devicePixelRatio;
     const before = state.marks.length;
     state.marks = state.marks.filter(m => !markHitTest(m, p, hitRadius));
-    if (state.marks.length !== before) redrawAll();
+    if (state.marks.length !== before) redrawAllMarks();
     return;
   }
 
@@ -1373,7 +1303,7 @@ function beginDraw(evt){
     drawing = { type:"circle", color: state.strokeColor, size: state.strokeSize*devicePixelRatio, cx:p.x, cy:p.y, r:1, start:p };
   }
 
-  redrawAll();
+  redrawAllMarks();
   previewDraw();
 }
 function updateDraw(evt){
@@ -1388,7 +1318,7 @@ function updateDraw(evt){
     drawing.r = Math.sqrt(dx*dx + dy*dy);
   }
 
-  redrawAll();
+  redrawAllMarks();
   previewDraw();
 }
 function endDraw(){
@@ -1402,13 +1332,13 @@ function endDraw(){
     const mark = deepClone(drawing);
     state.marks.push(mark);
     marksAddedThisGesture.push(mark);
-    redrawAll();
+    redrawAllMarks();
 
     if (state.recording){
       addStepFromChanges([], marksAddedThisGesture);
     }
   } else {
-    redrawAll();
+    redrawAllMarks();
   }
 
   drawing = null;
@@ -1450,7 +1380,7 @@ rewindBtn.addEventListener("click", rewindPlayback);
 /***********************
  * Save / Load plays (local)
  ***********************/
-const STORAGE_KEY = "wp_playbook_plays_v3";
+const STORAGE_KEY = "wp_playbook_plays_v4";
 
 function loadAllPlays(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -1461,7 +1391,7 @@ function saveAllPlays(plays){
 }
 function currentPlayState(){
   return {
-    version: 3,
+    version: 4,
     savedAt: new Date().toISOString(),
     isVertical: state.isVertical,
     showNumbers: state.showNumbers,
@@ -1471,6 +1401,7 @@ function currentPlayState(){
     show6m: state.show6m,
     swapped: state.swapped,
     showCages: state.showCages,
+    showAreas: state.showAreas,
     tokens: snapshotTokens(),
     marks: deepClone(state.marks),
     recordedSteps: deepClone(state.recordedSteps),
@@ -1486,6 +1417,7 @@ function applyPlayState(ps){
   state.show6m = (ps.show6m !== false);
   state.swapped = !!ps.swapped;
   state.showCages = (ps.showCages !== false);
+  state.showAreas = (ps.showAreas !== false);
 
   boardWrap.classList.toggle("vertical", state.isVertical);
   numbersBtn.textContent = `Cap Numbers: ${state.showNumbers ? "On" : "Off"}`;
@@ -1496,9 +1428,9 @@ function applyPlayState(ps){
   toggle6m.checked = state.show6m;
   swapLines.checked = state.swapped;
   toggleCages.checked = state.showCages;
+  toggleAreas.checked = state.showAreas;
 
-  applyLineVisibility();
-  applySwap();
+  redrawField();
 
   state.tokens = ps.tokens || formation6v6();
   state.marks = ps.marks || [];
@@ -1506,7 +1438,7 @@ function applyPlayState(ps){
 
   state.selectedTokenId = null;
   renderTokens();
-  redrawAll();
+  redrawAllMarks();
   resizeCanvases();
 }
 function refreshPlaysList(){
@@ -1586,7 +1518,7 @@ importBtn.addEventListener("click", ()=>{
 });
 
 /***********************
- * Share link (encodes play into URL)
+ * Share link
  ***********************/
 shareBtn.addEventListener("click", async ()=>{
   const payload = toB64Url(JSON.stringify(currentPlayState()));
@@ -1626,9 +1558,9 @@ function init(){
   renderTokens();
   resizeCanvases();
 
-  applyLineVisibility();
-  applySwap();
   refreshPlaysList();
+  redrawField();
+  redrawAllMarks();
 
   loadFromHashIfPresent();
 }
