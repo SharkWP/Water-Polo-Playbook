@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Water Polo PlayBook (Half Pool)</title>
+  <title>Water Polo PlayBook (Web)</title>
 
   <meta name="theme-color" content="#0b1220">
   <style>
@@ -21,7 +21,7 @@
       --poolTop:#0e4ea8;
       --poolBot:#0b3f86;
 
-      /* marking colors (defaults) */
+      /* marking colors */
       --twoM: rgba(255,199,44,.92);   /* yellow */
       --fiveM: rgba(255,77,77,.88);   /* red */
       --sixM: rgba(246,247,251,.92);  /* white */
@@ -158,11 +158,10 @@
       padding:10px;
     }
 
-    /* HALF POOL board: square-ish */
+    /* Full pool: wide */
     #boardWrap{
       position:relative;
-      width:min(920px, 100%);
-      aspect-ratio: 1 / 1;
+      width:min(1100px, 100%);
       border-radius:16px;
       overflow:hidden;
       background: linear-gradient(180deg, var(--poolTop), var(--poolBot));
@@ -171,6 +170,9 @@
       touch-action:none;
       isolation:isolate;
     }
+    #boardWrap.full{ aspect-ratio: 16 / 9; }
+    /* Half pool: square */
+    #boardWrap.half{ aspect-ratio: 1 / 1; max-width:920px; }
 
     /* Pool white border */
     #boardWrap::before{
@@ -189,7 +191,7 @@
       width:100%;
       height:100%;
     }
-    #fieldCanvas{ z-index:1; pointer-events:none; } /* markings + cages */
+    #fieldCanvas{ z-index:1; pointer-events:none; }
     #drawCanvas{ z-index:2; }
     #uiCanvas{ z-index:3; pointer-events:none; }
 
@@ -233,7 +235,6 @@
       pointer-events:none;
     }
 
-    /* Right panel */
     .right{
       width:390px;
       max-width:48vw;
@@ -326,7 +327,7 @@
 
 <body>
 <header>
-  <div class="brand"><span class="dot"></span>Water Polo PlayBook (Half Pool)</div>
+  <div class="brand"><span class="dot"></span>Water Polo PlayBook (Web)</div>
 
   <div class="toolbar">
     <div class="group">
@@ -351,17 +352,11 @@
     </div>
 
     <div class="group">
-      <label>League</label>
-      <select id="leagueSel">
-        <option value="wa">World Aquatics (6m focus)</option>
-        <option value="ncaa">NCAA (modern)</option>
-        <option value="usawp">USAWP (modern)</option>
-        <option value="nfhs">NFHS (HS)</option>
+      <label>View</label>
+      <select id="viewSel">
+        <option value="half">Half Pool</option>
+        <option value="full">Full Pool</option>
       </select>
-      <button id="applyLeagueBtn" class="primary">Apply</button>
-    </div>
-
-    <div class="group">
       <button id="flipBtn">Flip Attack</button>
       <button id="pngBtn">Download PNG</button>
     </div>
@@ -382,7 +377,7 @@
 <main>
   <section class="left">
     <div class="boardShell">
-      <div id="boardWrap">
+      <div id="boardWrap" class="half">
         <canvas id="fieldCanvas"></canvas>
         <canvas id="drawCanvas"></canvas>
         <canvas id="uiCanvas"></canvas>
@@ -398,9 +393,10 @@
     </div>
 
     <div id="panePlay" class="tabPane active">
-      <div class="panelTitle">Half-pool board options</div>
+      <div class="panelTitle">Board options</div>
       <div class="hint">
-        This board shows <b>one end</b> (goal → half line). Use <b>Flip Attack</b> to mirror everything (tokens + drawings + playback).
+        Use <b>View</b> to switch between <b>Half Pool</b> (set/6-on-5) and <b>Full Pool</b> (counter, press, transitions).
+        <br><b>Flip Attack</b> mirrors everything (tokens + drawings + playback).
         <br>Hotkeys: <b>N</b> edit selected cap number • <b>Delete</b> remove selected.
       </div>
 
@@ -426,7 +422,7 @@
 
       <div class="row">
         <select id="formationSel">
-          <option value="6v6">Reset: 6v6 (half)</option>
+          <option value="6v6">Reset: 6v6</option>
           <option value="6on5">Reset: 6 on 5</option>
           <option value="5on6">Reset: 5 on 6</option>
           <option value="empty">Reset: Empty</option>
@@ -457,18 +453,32 @@
     </div>
 
     <div id="paneRules" class="tabPane">
-      <div class="panelTitle">League preset notes</div>
+      <div class="panelTitle">Rules & markings (quick reference)</div>
       <div class="hint">
-        These presets set <b>which lines show</b> and default colors. Rule details vary—always follow your league’s official doc.
+        This tab is a simple cheat sheet for what the markings mean on the board. (Always follow your league’s official rulebook for exact wording.)
       </div>
 
-      <div class="ruleBox" id="rulesBox">
-        <h3>Current preset: <span id="presetName">—</span></h3>
-        <ul id="presetBullets"></ul>
+      <div class="ruleBox">
+        <h3>Markings shown here</h3>
+        <ul>
+          <li><b>2m</b> (yellow by default): set positioning / restriction reference.</li>
+          <li><b>5m</b> (red by default): optional reference line (toggle on/off).</li>
+          <li><b>6m</b> (white dashed): modern shot / foul reference (toggle on/off).</li>
+          <li><b>Half line</b>: transition reference (full pool) / boundary reference (half view).</li>
+        </ul>
+      </div>
+
+      <div class="ruleBox">
+        <h3>Board features</h3>
+        <ul>
+          <li><b>Half Pool</b>: best for 6-on-5, set entries, fronting help, post options.</li>
+          <li><b>Full Pool</b>: best for counter attack, press, drop shifts, transition defense.</li>
+          <li><b>Flip Attack</b>: mirrors everything for “switch ends” without re-drawing.</li>
+        </ul>
       </div>
 
       <div class="footerNote">
-        Want this tab to be exact? Tell me your league (World Aquatics / NCAA / USAWP / NFHS) + year/version and I’ll lock it in.
+        Want “rules update” text to match your program exactly? Tell me your league + season and I’ll tailor this tab’s wording.
       </div>
     </div>
   </aside>
@@ -482,7 +492,6 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const uid = () => Math.random().toString(36).slice(2, 10);
 const now = () => performance.now();
 const deepClone = (obj)=> JSON.parse(JSON.stringify(obj));
-
 function getCanvasPoint(evt, canvas){
   const rect = canvas.getBoundingClientRect();
   const x = (evt.clientX - rect.left) * (canvas.width / rect.width);
@@ -490,8 +499,6 @@ function getCanvasPoint(evt, canvas){
   return {x,y};
 }
 function lerp(a,b,t){ return a + (b-a)*t; }
-
-// URL-safe base64 helpers
 function toB64Url(str){
   return btoa(unescape(encodeURIComponent(str)))
     .replaceAll("+","-").replaceAll("/","_").replaceAll("=","");
@@ -501,69 +508,9 @@ function fromB64Url(b64){
   const s = (b64 + pad).replaceAll("-","+").replaceAll("_","/");
   return decodeURIComponent(escape(atob(s)));
 }
-
 function cssVar(name){
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
-
-/***********************
- * League presets
- * (These are UI presets for markings + toggles, not official legal text.)
- ***********************/
-const LEAGUES = {
-  wa: {
-    name: "World Aquatics (6m focus)",
-    poolLengthM: 25,          // used only for half-length scale mapping
-    show2m: true,
-    show5m: false,
-    show6m: true,
-    bullets: [
-      "Emphasizes 6m reference for modern shot situations.",
-      "2m line remains for center / set positioning reference.",
-      "5m line often de-emphasized on modern boards (toggle it on if your team uses it)."
-    ],
-    colors: { twoM: "rgba(255,199,44,.92)", fiveM: "rgba(255,77,77,.88)", sixM:"rgba(246,247,251,.92)" }
-  },
-  ncaa: {
-    name: "NCAA (modern)",
-    poolLengthM: 25,
-    show2m: true,
-    show5m: false,
-    show6m: true,
-    bullets: [
-      "Modern college play commonly diagrams with 2m + 6m.",
-      "Use half-pool for man-up, set entries, quicks, and post work.",
-      "If you still diagram 5m concepts, toggle it on."
-    ],
-    colors: { twoM: "rgba(255,199,44,.92)", fiveM: "rgba(255,77,77,.88)", sixM:"rgba(246,247,251,.92)" }
-  },
-  usawp: {
-    name: "USAWP (modern)",
-    poolLengthM: 25,
-    show2m: true,
-    show5m: false,
-    show6m: true,
-    bullets: [
-      "Modern diagramming usually uses 2m + 6m as primary references.",
-      "Half-pool is perfect for 6-on-5 structures and counter-to-set actions.",
-      "Toggle 5m on if your coaching staff wants it visible."
-    ],
-    colors: { twoM: "rgba(255,199,44,.92)", fiveM: "rgba(255,77,77,.88)", sixM:"rgba(246,247,251,.92)" }
-  },
-  nfhs: {
-    name: "NFHS (HS)",
-    poolLengthM: 25,
-    show2m: true,
-    show5m: true,
-    show6m: false,
-    bullets: [
-      "High school diagramming often keeps 5m visible as a key reference.",
-      "If your HS association uses 6m references, toggle 6m on manually.",
-      "Half-pool helps teach spacing, entry passes, and help defense."
-    ],
-    colors: { twoM: "rgba(255,199,44,.92)", fiveM: "rgba(255,77,77,.88)", sixM:"rgba(246,247,251,.92)" }
-  }
-};
 
 /***********************
  * State
@@ -574,8 +521,8 @@ const state = {
   strokeSize: 6,
   showNumbers: true,
 
-  // half-pool direction: goal can be left or right
-  goalSide: "left", // "left" or "right"
+  view: "half",       // "half" or "full"
+  goalSide: "left",   // attack direction anchor (flip mirrors)
 
   tokens: [],
   marks: [],
@@ -600,8 +547,7 @@ const state = {
   showCages: true,
   showAreas: true,
 
-  leagueKey: "wa",
-  poolLengthM: 25, // used for mapping 2/5/6 onto half-pool length
+  poolLengthM: 25,
 };
 
 /***********************
@@ -632,9 +578,7 @@ const strokeSizeInput = document.getElementById("strokeSize");
 const undoBtn = document.getElementById("undoBtn");
 const clearBtn = document.getElementById("clearBtn");
 
-const leagueSel = document.getElementById("leagueSel");
-const applyLeagueBtn = document.getElementById("applyLeagueBtn");
-
+const viewSel = document.getElementById("viewSel");
 const flipBtn = document.getElementById("flipBtn");
 const pngBtn = document.getElementById("pngBtn");
 
@@ -674,10 +618,6 @@ const tabRules = document.getElementById("tabRules");
 const panePlay = document.getElementById("panePlay");
 const paneRules = document.getElementById("paneRules");
 
-// rules box
-const presetName = document.getElementById("presetName");
-const presetBullets = document.getElementById("presetBullets");
-
 /***********************
  * Tabs
  ***********************/
@@ -708,7 +648,7 @@ new ResizeObserver(resizeCanvases).observe(boardWrap);
 window.addEventListener("resize", resizeCanvases);
 
 /***********************
- * Field drawing (Half pool)
+ * Field drawing
  ***********************/
 function redrawField(){
   const w = fieldCanvas.width;
@@ -717,23 +657,23 @@ function redrawField(){
   fctx.setTransform(1,0,0,1,0,0);
   fctx.clearRect(0,0,w,h);
 
-  // mapping meters -> xPct from goal line across HALF LENGTH
-  // halfLength = poolLength/2
-  const halfLen = state.poolLengthM / 2;
-
-  function meterToXPct(m){
-    const pct = (m / halfLen) * 100;
-    return clamp(pct, 0, 100);
-  }
-
-  // choose colors (swap option supported)
   const twoCol  = state.swapped ? (cssVar("--fiveM") || "rgba(255,77,77,.88)") : (cssVar("--twoM") || "rgba(255,199,44,.92)");
   const fiveCol = state.swapped ? (cssVar("--twoM") || "rgba(255,199,44,.92)") : (cssVar("--fiveM") || "rgba(255,77,77,.88)");
   const sixCol  = cssVar("--sixM") || "rgba(246,247,251,.92)";
   const whiteCol = cssVar("--white") || "rgba(246,247,251,.92)";
 
-  // helper: draw vertical line in board coords (percent)
-  // if goal is on right, we mirror x automatically
+  // meters -> x% mapping depends on view
+  // Full: 0..25m across width
+  // Half: 0..12.5m across width
+  const halfLen = state.poolLengthM / 2;
+  const spanM = (state.view === "full") ? state.poolLengthM : halfLen;
+
+  function meterToXPctFromGoal(m){
+    const pct = (m / spanM) * 100;
+    return clamp(pct, 0, 100);
+  }
+
+  // vertical line helper. In full view we often draw BOTH ends (mirrored).
   function vLine(xPct, style, widthPx, dashed=false){
     const xTruePct = (state.goalSide === "left") ? xPct : (100 - xPct);
     const x = (xTruePct/100) * w;
@@ -750,117 +690,159 @@ function redrawField(){
     fctx.restore();
   }
 
-  // goal line (at 0m)
-  // draw it as a thicker white line
-  vLine(0, whiteCol, 4, false);
+  // draw goal line(s)
+  if (state.view === "half"){
+    vLine(0, whiteCol, 4, false);
+    if (state.showHalf) vLine(100, whiteCol, 3, false);
+    if (state.show2m) vLine(meterToXPctFromGoal(2), twoCol, 3, false);
+    if (state.show5m) vLine(meterToXPctFromGoal(5), fiveCol, 3, false);
+    if (state.show6m) vLine(meterToXPctFromGoal(6), sixCol, 3, true);
+  } else {
+    // full pool: both goal lines + center/half line
+    vLine(0, whiteCol, 4, false);
+    vLine(100, whiteCol, 4, false);
+    if (state.showHalf) vLine(50, whiteCol, 3, false);
 
-  // half line (at half length)
-  if (state.showHalf) vLine(100, whiteCol, 3, false);
+    // markings from BOTH ends: draw at m and (25 - m)
+    if (state.show2m){
+      vLine(meterToXPctFromGoal(2), twoCol, 3, false);
+      vLine(100 - meterToXPctFromGoal(2), twoCol, 3, false);
+    }
+    if (state.show5m){
+      vLine(meterToXPctFromGoal(5), fiveCol, 3, false);
+      vLine(100 - meterToXPctFromGoal(5), fiveCol, 3, false);
+    }
+    if (state.show6m){
+      vLine(meterToXPctFromGoal(6), sixCol, 3, true);
+      vLine(100 - meterToXPctFromGoal(6), sixCol, 3, true);
+    }
+  }
 
-  // 2m / 5m / 6m
-  if (state.show2m) vLine(meterToXPct(2), twoCol, 3, false);
-  if (state.show5m) vLine(meterToXPct(5), fiveCol, 3, false);
-  if (state.show6m) vLine(meterToXPct(6), sixCol, 3, true);
+  // Goal areas + cages:
+  // Half: only on goal side
+  // Full: both ends
+  function drawGoalStuff(side){ // side: "left" or "right"
+    if (!state.showAreas && !state.showCages) return;
 
-  // Goal areas (simple box near goal)
-  if (state.showAreas){
-    // box anchored near goal side
+    const isLeft = side === "left";
     const boxW = 0.14*w;
     const boxH = 0.56*h;
     const top = 0.22*h;
     const inset = 0.045*w;
+    const xBox = isLeft ? inset : (w - inset - boxW);
 
-    const isLeft = state.goalSide === "left";
-    const x = isLeft ? inset : (w - inset - boxW);
+    if (state.showAreas){
+      fctx.save();
+      fctx.strokeStyle = whiteCol;
+      fctx.lineWidth = 3*devicePixelRatio;
+      fctx.beginPath();
+      fctx.roundRect(xBox, top, boxW, boxH, 10*devicePixelRatio);
+      fctx.stroke();
+      fctx.restore();
+    }
 
-    fctx.save();
-    fctx.strokeStyle = whiteCol;
-    fctx.lineWidth = 3*devicePixelRatio;
-    fctx.beginPath();
-    fctx.roundRect(x, top, boxW, boxH, 10*devicePixelRatio);
-    fctx.stroke();
-    fctx.restore();
+    if (state.showCages){
+      const cageTop = 0.36*h;
+      const cageH   = 0.28*h;
+      const cageW   = 0.07*w;
+      const inset2 = 0.022*w;
+      const xCage = isLeft ? inset2 : (w - inset2 - cageW);
+
+      fctx.save();
+      fctx.strokeStyle = "rgba(246,247,251,.95)";
+      fctx.lineWidth = 3*devicePixelRatio;
+      fctx.fillStyle = "rgba(0,0,0,.10)";
+      fctx.beginPath();
+      fctx.roundRect(xCage, cageTop, cageW, cageH, 8*devicePixelRatio);
+      fctx.fill();
+      fctx.stroke();
+
+      // net
+      fctx.globalAlpha = 0.55;
+      fctx.strokeStyle = "rgba(255,255,255,.22)";
+      fctx.lineWidth = 1*devicePixelRatio;
+      const step = 10*devicePixelRatio;
+      for (let xx = xCage + 3*devicePixelRatio; xx < xCage + cageW - 3*devicePixelRatio; xx += step){
+        fctx.beginPath();
+        fctx.moveTo(xx, cageTop + 3*devicePixelRatio);
+        fctx.lineTo(xx, cageTop + cageH - 3*devicePixelRatio);
+        fctx.stroke();
+      }
+      for (let yy = cageTop + 3*devicePixelRatio; yy < cageTop + cageH - 3*devicePixelRatio; yy += step){
+        fctx.beginPath();
+        fctx.moveTo(xCage + 3*devicePixelRatio, yy);
+        fctx.lineTo(xCage + cageW - 3*devicePixelRatio, yy);
+        fctx.stroke();
+      }
+      fctx.restore();
+    }
   }
 
-  // Cage (one goal)
-  if (state.showCages){
-    const cageTop = 0.36*h;
-    const cageH   = 0.28*h;
-    const cageW   = 0.07*w;
-    const inset = 0.022*w;
-
-    const isLeft = state.goalSide === "left";
-    const x = isLeft ? inset : (w - inset - cageW);
-
-    fctx.save();
-    // frame
-    fctx.strokeStyle = "rgba(246,247,251,.95)";
-    fctx.lineWidth = 3*devicePixelRatio;
-    fctx.fillStyle = "rgba(0,0,0,.10)";
-    fctx.beginPath();
-    fctx.roundRect(x, cageTop, cageW, cageH, 8*devicePixelRatio);
-    fctx.fill();
-    fctx.stroke();
-
-    // net grid
-    fctx.globalAlpha = 0.55;
-    fctx.strokeStyle = "rgba(255,255,255,.22)";
-    fctx.lineWidth = 1*devicePixelRatio;
-
-    const step = 10*devicePixelRatio;
-    for (let xx = x + 3*devicePixelRatio; xx < x + cageW - 3*devicePixelRatio; xx += step){
-      fctx.beginPath();
-      fctx.moveTo(xx, cageTop + 3*devicePixelRatio);
-      fctx.lineTo(xx, cageTop + cageH - 3*devicePixelRatio);
-      fctx.stroke();
-    }
-    for (let yy = cageTop + 3*devicePixelRatio; yy < cageTop + cageH - 3*devicePixelRatio; yy += step){
-      fctx.beginPath();
-      fctx.moveTo(x + 3*devicePixelRatio, yy);
-      fctx.lineTo(x + cageW - 3*devicePixelRatio, yy);
-      fctx.stroke();
-    }
-    fctx.restore();
+  if (state.view === "half"){
+    drawGoalStuff(state.goalSide);
+  } else {
+    drawGoalStuff("left");
+    drawGoalStuff("right");
   }
 }
 
 /***********************
- * Tokens & formations (half pool)
+ * Tokens & formations
  ***********************/
 function formation6v6(){
   const tokens = [];
-  // offense near goal, defense slightly out
-  // positions are percent in half-pool square. Goal side is handled by Flip Attack if needed.
-  const o = [[22,30],[22,50],[22,70],[35,35],[35,65],[30,50]];
-  for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"blue", xPct:o[i][0], yPct:o[i][1], num:String(i+1) });
-
-  const d = [[60,35],[60,50],[60,65],[72,42],[72,58],[68,50]];
-  for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"white", xPct:d[i][0], yPct:d[i][1], num:String(i+1) });
-
-  tokens.push({ id: uid(), team:"ball", xPct: 32, yPct: 50, num: "●" });
-  return tokens;
+  if (state.view === "half"){
+    const o = [[22,30],[22,50],[22,70],[35,35],[35,65],[30,50]];
+    for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"blue", xPct:o[i][0], yPct:o[i][1], num:String(i+1) });
+    const d = [[60,35],[60,50],[60,65],[72,42],[72,58],[68,50]];
+    for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"white", xPct:d[i][0], yPct:d[i][1], num:String(i+1) });
+    tokens.push({ id: uid(), team:"ball", xPct: 32, yPct: 50, num: "●" });
+    return tokens;
+  } else {
+    // full pool: spread more
+    const o = [[28,25],[28,50],[28,75],[40,35],[40,65],[36,50]];
+    for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"blue", xPct:o[i][0], yPct:o[i][1], num:String(i+1) });
+    const d = [[72,25],[72,50],[72,75],[60,35],[60,65],[64,50]];
+    for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"white", xPct:d[i][0], yPct:d[i][1], num:String(i+1) });
+    tokens.push({ id: uid(), team:"ball", xPct: 50, yPct: 50, num: "●" });
+    return tokens;
+  }
 }
 function formation6on5(){
   const tokens = [];
-  const o = [[22,30],[22,50],[22,70],[38,35],[38,65],[32,50]];
-  for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"blue", xPct:o[i][0], yPct:o[i][1], num:String(i+1) });
-
-  const d = [[62,35],[62,50],[62,65],[74,42],[74,58]];
-  for (let i=0;i<5;i++) tokens.push({ id: uid(), team:"white", xPct:d[i][0], yPct:d[i][1], num:String(i+1) });
-
-  tokens.push({ id: uid(), team:"ball", xPct: 32, yPct: 50, num: "●" });
-  return tokens;
+  if (state.view === "half"){
+    const o = [[22,30],[22,50],[22,70],[38,35],[38,65],[32,50]];
+    for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"blue", xPct:o[i][0], yPct:o[i][1], num:String(i+1) });
+    const d = [[62,35],[62,50],[62,65],[74,42],[74,58]];
+    for (let i=0;i<5;i++) tokens.push({ id: uid(), team:"white", xPct:d[i][0], yPct:d[i][1], num:String(i+1) });
+    tokens.push({ id: uid(), team:"ball", xPct: 32, yPct: 50, num: "●" });
+    return tokens;
+  } else {
+    const o = [[30,30],[30,50],[30,70],[44,35],[44,65],[38,50]];
+    for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"blue", xPct:o[i][0], yPct:o[i][1], num:String(i+1) });
+    const d = [[70,35],[70,50],[70,65],[58,42],[58,58]];
+    for (let i=0;i<5;i++) tokens.push({ id: uid(), team:"white", xPct:d[i][0], yPct:d[i][1], num:String(i+1) });
+    tokens.push({ id: uid(), team:"ball", xPct: 45, yPct: 50, num: "●" });
+    return tokens;
+  }
 }
 function formation5on6(){
   const tokens = [];
-  const w = [[62,30],[62,50],[62,70],[46,35],[46,65],[52,50]];
-  for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"white", xPct:w[i][0], yPct:w[i][1], num:String(i+1) });
-
-  const b = [[22,35],[22,50],[22,65],[10,42],[10,58]];
-  for (let i=0;i<5;i++) tokens.push({ id: uid(), team:"blue", xPct:b[i][0], yPct:b[i][1], num:String(i+1) });
-
-  tokens.push({ id: uid(), team:"ball", xPct: 52, yPct: 50, num: "●" });
-  return tokens;
+  if (state.view === "half"){
+    const w = [[62,30],[62,50],[62,70],[46,35],[46,65],[52,50]];
+    for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"white", xPct:w[i][0], yPct:w[i][1], num:String(i+1) });
+    const b = [[22,35],[22,50],[22,65],[10,42],[10,58]];
+    for (let i=0;i<5;i++) tokens.push({ id: uid(), team:"blue", xPct:b[i][0], yPct:b[i][1], num:String(i+1) });
+    tokens.push({ id: uid(), team:"ball", xPct: 52, yPct: 50, num: "●" });
+    return tokens;
+  } else {
+    const w = [[70,25],[70,50],[70,75],[56,35],[56,65],[62,50]];
+    for (let i=0;i<6;i++) tokens.push({ id: uid(), team:"white", xPct:w[i][0], yPct:w[i][1], num:String(i+1) });
+    const b = [[30,35],[30,50],[30,65],[42,42],[42,58]];
+    for (let i=0;i<5;i++) tokens.push({ id: uid(), team:"blue", xPct:b[i][0], yPct:b[i][1], num:String(i+1) });
+    tokens.push({ id: uid(), team:"ball", xPct: 55, yPct: 50, num: "●" });
+    return tokens;
+  }
 }
 function formationEmpty(){ return []; }
 
@@ -886,7 +868,6 @@ function renderTokens(){
     tokensLayer.appendChild(el);
   }
 }
-
 function updateTokenNumbers(){
   document.querySelectorAll(".token").forEach(el=>{
     const id = el.dataset.id;
@@ -951,7 +932,6 @@ function drawHighlight(ctx, points, color, size){
   ctx.stroke();
   ctx.restore();
 }
-
 function redrawAllMarks(){
   clearCanvas(dctx);
   clearCanvas(uctx);
@@ -961,8 +941,6 @@ function redrawAllMarks(){
     if (m.type === "highlight") drawHighlight(dctx, m.points, m.color, m.size);
   }
 }
-
-// eraser hit test
 function distPointToSegment(px,py,x1,y1,x2,y2){
   const dx=x2-x1, dy=y2-y1;
   if (dx===0 && dy===0) return Math.hypot(px-x1, py-y1);
@@ -1132,6 +1110,32 @@ toggleAreas.addEventListener("change", ()=>{ state.showAreas = toggleAreas.check
 swapLines.addEventListener("change", ()=>{ state.swapped = swapLines.checked; redrawField(); });
 
 /***********************
+ * View (Half / Full)
+ ***********************/
+function setView(view){
+  if (state.playing) pausePlayback();
+  if (state.recording) stopRecording();
+
+  state.view = view;
+  viewSel.value = view;
+
+  boardWrap.classList.toggle("half", view === "half");
+  boardWrap.classList.toggle("full", view === "full");
+
+  // reset tokens to a sensible formation for the new view
+  state.selectedTokenId = null;
+  state.marks = [];
+  state.recordedSteps = [];
+  state.tokens = formation6v6();
+  renderTokens();
+
+  redrawField();
+  redrawAllMarks();
+  resizeCanvases();
+}
+viewSel.addEventListener("change", (e)=> setView(e.target.value));
+
+/***********************
  * Undo / Clear
  ***********************/
 undoBtn.addEventListener("click", ()=>{
@@ -1149,7 +1153,7 @@ clearBtn.addEventListener("click", ()=>{
  ***********************/
 function addToken(team){
   const numDefault = (team==="ball") ? "●" : String((state.tokens.filter(t=>t.team===team).length % 13) + 1);
-  state.tokens.push({ id: uid(), team, xPct: 45, yPct: 50, num: numDefault });
+  state.tokens.push({ id: uid(), team, xPct: 50, yPct: 50, num: numDefault });
   renderTokens();
 }
 addBlueBtn.addEventListener("click", ()=> addToken("blue"));
@@ -1170,19 +1174,16 @@ tokensLayer.addEventListener("pointerdown", (evt)=>{
   renderTokens();
 });
 
-// Reliable number editing: button + hotkey + dblclick
 function editSelectedNumber(){
   if (!state.selectedTokenId) return;
   const t = state.tokens.find(x=>x.id===state.selectedTokenId);
   if (!t || t.team === "ball") return;
-
   const val = prompt("Cap number:", t.num || "");
   if (val === null) return;
   t.num = val.trim();
   renderTokens();
 }
 editNumBtn.addEventListener("click", editSelectedNumber);
-
 tokensLayer.addEventListener("dblclick", (evt)=>{
   const tokenEl = evt.target.closest(".token");
   if (!tokenEl) return;
@@ -1190,8 +1191,6 @@ tokensLayer.addEventListener("dblclick", (evt)=>{
   renderTokens();
   editSelectedNumber();
 });
-
-// hotkeys
 window.addEventListener("keydown", (e)=>{
   if (e.key === "Delete" || e.key === "Backspace"){
     if (state.selectedTokenId){
@@ -1200,9 +1199,7 @@ window.addEventListener("keydown", (e)=>{
       renderTokens();
     }
   }
-  if (e.key.toLowerCase() === "n"){
-    editSelectedNumber();
-  }
+  if (e.key.toLowerCase() === "n") editSelectedNumber();
 });
 
 resetFormationBtn.addEventListener("click", ()=>{
@@ -1368,22 +1365,18 @@ playBtn.addEventListener("click", ()=>{
 rewindBtn.addEventListener("click", rewindPlayback);
 
 /***********************
- * Flip Attack (REAL rotate replacement)
- * Mirrors tokens + marks + recorded steps + goal side
+ * Flip Attack (mirrors tokens + marks + steps)
  ***********************/
 function flipPct(p){ return 100 - p; }
 function flipXCanvas(x){ return drawCanvas.width - x; }
 
 function flipAll(){
-  // flip goal side
   state.goalSide = (state.goalSide === "left") ? "right" : "left";
 
-  // tokens
   for (const t of state.tokens){
     t.xPct = flipPct(t.xPct);
   }
 
-  // marks
   for (const m of state.marks){
     if (m.type === "circle"){
       m.cx = flipXCanvas(m.cx);
@@ -1392,7 +1385,6 @@ function flipAll(){
     }
   }
 
-  // recorded steps
   for (const step of state.recordedSteps){
     for (const mv of step.tokenMoves){
       mv.from.xPct = flipPct(mv.from.xPct);
@@ -1413,7 +1405,6 @@ function flipAll(){
   redrawAllMarks();
   renderTokens();
 }
-
 flipBtn.addEventListener("click", ()=>{
   if (state.playing) return;
   flipAll();
@@ -1431,7 +1422,6 @@ pngBtn.addEventListener("click", ()=>{
   tmp.width = w; tmp.height = h;
   const ctx = tmp.getContext("2d");
 
-  // pool background
   const topCol = getComputedStyle(document.documentElement).getPropertyValue("--poolTop").trim() || "#0e4ea8";
   const botCol = getComputedStyle(document.documentElement).getPropertyValue("--poolBot").trim() || "#0b3f86";
   const grad = ctx.createLinearGradient(0,0,0,h);
@@ -1440,7 +1430,6 @@ pngBtn.addEventListener("click", ()=>{
   ctx.fillStyle = grad;
   ctx.fillRect(0,0,w,h);
 
-  // border
   ctx.save();
   ctx.strokeStyle = "rgba(246,247,251,.92)";
   ctx.lineWidth = 3*devicePixelRatio;
@@ -1453,7 +1442,6 @@ pngBtn.addEventListener("click", ()=>{
   ctx.drawImage(fieldCanvas, 0, 0);
   ctx.drawImage(drawCanvas, 0, 0);
 
-  // tokens
   for (const t of state.tokens){
     const x = (t.xPct/100) * w;
     const y = (t.yPct/100) * h;
@@ -1487,58 +1475,15 @@ pngBtn.addEventListener("click", ()=>{
   }
 
   const a = document.createElement("a");
-  a.download = "waterpolo-halfpool.png";
+  a.download = (state.view === "full") ? "waterpolo-fullpool.png" : "waterpolo-halfpool.png";
   a.href = tmp.toDataURL("image/png");
   a.click();
 });
 
 /***********************
- * League preset apply
- ***********************/
-function setRootColor(varName, value){
-  document.documentElement.style.setProperty(varName, value);
-}
-
-function applyLeague(key){
-  const lg = LEAGUES[key] || LEAGUES.wa;
-  state.leagueKey = key;
-  state.poolLengthM = lg.poolLengthM;
-
-  // toggles
-  state.show2m = lg.show2m;
-  state.show5m = lg.show5m;
-  state.show6m = lg.show6m;
-
-  toggle2m.checked = state.show2m;
-  toggle5m.checked = state.show5m;
-  toggle6m.checked = state.show6m;
-
-  // colors
-  setRootColor("--twoM", lg.colors.twoM);
-  setRootColor("--fiveM", lg.colors.fiveM);
-  setRootColor("--sixM", lg.colors.sixM);
-
-  // rules tab text
-  presetName.textContent = lg.name;
-  presetBullets.innerHTML = "";
-  for (const b of lg.bullets){
-    const li = document.createElement("li");
-    li.textContent = b;
-    presetBullets.appendChild(li);
-  }
-
-  redrawField();
-}
-
-applyLeagueBtn.addEventListener("click", ()=>{
-  applyLeague(leagueSel.value);
-  setTab("play");
-});
-
-/***********************
  * Save / Load plays (local)
  ***********************/
-const STORAGE_KEY = "wp_playbook_halfpool_v1";
+const STORAGE_KEY = "wp_playbook_v2";
 
 function loadAllPlays(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
@@ -1549,8 +1494,9 @@ function saveAllPlays(plays){
 }
 function currentPlayState(){
   return {
-    version: 1,
+    version: 2,
     savedAt: new Date().toISOString(),
+    view: state.view,
     goalSide: state.goalSide,
     showNumbers: state.showNumbers,
     showHalf: state.showHalf,
@@ -1560,14 +1506,13 @@ function currentPlayState(){
     swapped: state.swapped,
     showCages: state.showCages,
     showAreas: state.showAreas,
-    leagueKey: state.leagueKey,
-    poolLengthM: state.poolLengthM,
     tokens: snapshotTokens(),
     marks: deepClone(state.marks),
     recordedSteps: deepClone(state.recordedSteps),
   };
 }
 function applyPlayState(ps){
+  state.view = ps.view || "half";
   state.goalSide = ps.goalSide || "left";
   state.showNumbers = (ps.showNumbers !== false);
 
@@ -1579,9 +1524,9 @@ function applyPlayState(ps){
   state.showCages = (ps.showCages !== false);
   state.showAreas = (ps.showAreas !== false);
 
-  state.leagueKey = ps.leagueKey || "wa";
-  state.poolLengthM = ps.poolLengthM || 25;
-  leagueSel.value = state.leagueKey;
+  viewSel.value = state.view;
+  boardWrap.classList.toggle("half", state.view === "half");
+  boardWrap.classList.toggle("full", state.view === "full");
 
   numbersBtn.textContent = `Cap Numbers: ${state.showNumbers ? "On" : "Off"}`;
 
@@ -1593,9 +1538,6 @@ function applyPlayState(ps){
   toggleCages.checked = state.showCages;
   toggleAreas.checked = state.showAreas;
 
-  // apply league visuals (colors + rules tab)
-  applyLeague(state.leagueKey);
-
   state.tokens = ps.tokens || formation6v6();
   state.marks = ps.marks || [];
   state.recordedSteps = ps.recordedSteps || [];
@@ -1604,6 +1546,7 @@ function applyPlayState(ps){
   renderTokens();
   redrawAllMarks();
   resizeCanvases();
+  redrawField();
 }
 function refreshPlaysList(){
   const plays = loadAllPlays();
@@ -1681,7 +1624,6 @@ importBtn.addEventListener("click", ()=>{
   }
 });
 
-// Share link
 shareBtn.addEventListener("click", async ()=>{
   const payload = toB64Url(JSON.stringify(currentPlayState()));
   const url = new URL(window.location.href);
@@ -1716,15 +1658,8 @@ function init(){
   state.strokeColor = strokeColorInput.value;
   state.strokeSize = Number(strokeSizeInput.value);
 
-  // default league
-  leagueSel.value = state.leagueKey;
-  applyLeague(state.leagueKey);
-
-  // default formation
-  state.tokens = formation6v6();
-  renderTokens();
-  resizeCanvases();
-  redrawAllMarks();
+  // initial view
+  setView("half");
 
   refreshPlaysList();
   loadFromHashIfPresent();
