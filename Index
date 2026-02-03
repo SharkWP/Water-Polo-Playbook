@@ -1,0 +1,1456 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Water Polo PlayBook (Web)</title>
+
+  <!-- Nice tab icon + theme -->
+  <meta name="theme-color" content="#0b1220">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%2369B3E7'/><stop offset='1' stop-color='%230b3f86'/></linearGradient></defs><circle cx='50' cy='50' r='46' fill='url(%23g)'/><text x='50' y='63' font-size='44' font-family='Arial' font-weight='700' text-anchor='middle' fill='white'>WP</text></svg>">
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#111a2e;
+      --panel2:#0f1730;
+      --text:#e8eefc;
+      --muted:#a9b5d6;
+      --line:#223156;
+      --accent:#69B3E7;
+      --danger:#ff4d4d;
+      --ok:#3ddc97;
+
+      --poolTop:#0e4ea8;
+      --poolBot:#0b3f86;
+      --white:#f6f7fb;
+
+      /* default: standard water polo colors */
+      --twoM: rgba(255,199,44,.92);  /* yellow */
+      --fiveM: rgba(255,77,77,.88);  /* red */
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 600px at 20% -10%, #1a2c5a 0%, var(--bg) 60%);
+      color:var(--text);
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    header{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(17,26,46,0.9), rgba(15,23,48,0.7));
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      font-weight:900;
+      letter-spacing:.3px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      user-select:none;
+      margin-right:8px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      background:var(--accent);
+      box-shadow:0 0 14px rgba(105,179,231,.7);
+    }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      width:100%;
+    }
+
+    .group{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 8px;
+      border:1px solid var(--line);
+      background: rgba(10,16,30,.35);
+      border-radius:12px;
+    }
+    .group label{
+      font-size:12px;
+      color:var(--muted);
+      user-select:none;
+      margin-right:2px;
+    }
+
+    button, select, input[type="text"]{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+      outline:none;
+      white-space:nowrap;
+    }
+    button:hover, select:hover{ border-color:#2f4477 }
+    button:active{ transform: translateY(1px); }
+
+    button.primary{
+      border-color: rgba(105,179,231,.55);
+      background: rgba(105,179,231,.14);
+    }
+    button.danger{
+      border-color: rgba(255,77,77,.55);
+      background: rgba(255,77,77,.12);
+    }
+    button.ok{
+      border-color: rgba(61,220,151,.55);
+      background: rgba(61,220,151,.12);
+    }
+    button.active{
+      outline:2px solid rgba(105,179,231,.55);
+      background: rgba(105,179,231,.18);
+    }
+
+    .chip{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      font-weight:800;
+      user-select:none;
+    }
+    .chip input{ transform: translateY(1px); }
+
+    input[type="color"]{
+      width:44px; height:36px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background: transparent;
+      padding:0;
+      cursor:pointer;
+    }
+    input[type="range"]{ accent-color: var(--accent); }
+
+    main{
+      flex:1;
+      display:flex;
+      gap:12px;
+      padding:12px;
+      min-height:0;
+    }
+
+    .left{
+      flex:1;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .boardShell{
+      flex:1;
+      min-height:0;
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      background: rgba(255,255,255,.03);
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+    }
+
+    /* CLEAN board (no overlays) */
+    #boardWrap{
+      position:relative;
+      width:min(980px, 100%);
+      aspect-ratio: 2 / 1;
+      border-radius:16px;
+      overflow:hidden;
+      background: linear-gradient(180deg, var(--poolTop), var(--poolBot));
+      box-shadow: 0 18px 60px rgba(0,0,0,.35);
+      transform-origin:center center;
+      touch-action:none;
+    }
+    #boardWrap.vertical{ aspect-ratio: 1 / 2; }
+
+    /* Pool markings */
+    .poolLines{
+      position:absolute; inset:0;
+      pointer-events:none;
+    }
+    .poolLines::before{
+      content:"";
+      position:absolute; inset:3.5%;
+      border:3px solid rgba(246,247,251,.92);
+      border-radius:12px;
+    }
+
+    .halfLine{
+      position:absolute;
+      left:50%;
+      top:6%;
+      bottom:6%;
+      width:3px;
+      background: rgba(246,247,251,.92);
+      transform: translateX(-50%);
+    }
+
+    .goalBoxL, .goalBoxR{
+      position:absolute;
+      top:22%;
+      bottom:22%;
+      width:12%;
+      border:3px solid rgba(246,247,251,.92);
+      border-radius:10px;
+    }
+    .goalBoxL{ left:3.5%; }
+    .goalBoxR{ right:3.5%; }
+
+    .twoM, .fiveM{
+      position:absolute;
+      top:6%; bottom:6%;
+      width:3px;
+    }
+    .twoM{ background: var(--twoM); }
+    .fiveM{ background: var(--fiveM); }
+    .twoM.left{ left: 7%; }
+    .twoM.right{ right: 7%; }
+    .fiveM.left{ left: 17%; }
+    .fiveM.right{ right: 17%; }
+
+    canvas{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+    }
+    #drawCanvas{ z-index:2; }
+    #uiCanvas{ z-index:3; pointer-events:none; }
+
+    .tokensLayer{
+      position:absolute;
+      inset:0;
+      z-index:4;
+      touch-action:none;
+    }
+
+    .token{
+      position:absolute;
+      width:44px; height:44px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:1000;
+      user-select:none;
+      cursor:grab;
+      border:2px solid rgba(255,255,255,.65);
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+      transform: translate(-50%, -50%);
+    }
+    .token:active{ cursor:grabbing; }
+
+    .token.blue{
+      background: rgba(105,179,231,.92);
+      color:#081226;
+    }
+    .token.white{
+      background: rgba(246,247,251,.95);
+      color:#0b1220;
+    }
+    .token.ball{
+      width:28px;height:28px;
+      background: rgba(255,199,44,.98);
+      border-color: rgba(255,255,255,.75);
+      color:#111;
+      font-weight:1000;
+    }
+    .token .num{
+      font-size:16px;
+      line-height:1;
+      text-shadow: 0 2px 8px rgba(0,0,0,.2);
+      pointer-events:none;
+    }
+
+    .right{
+      width:360px;
+      max-width:42vw;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background: rgba(17,26,46,.6);
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
+    }
+
+    .panelTitle{ font-weight:1000; letter-spacing:.2px; }
+    .hint{ color:var(--muted); font-size:12px; line-height:1.35; }
+
+    .row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .row > * { flex: 1 1 auto; }
+
+    .list{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: rgba(10,16,30,.35);
+      padding:8px;
+      overflow:auto;
+      min-height:0;
+      flex:1;
+    }
+    .playItem{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:8px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.06);
+      margin-bottom:8px;
+      background: rgba(255,255,255,.03);
+    }
+    .playItem:last-child{ margin-bottom:0; }
+    .playName{
+      font-weight:900;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width:190px;
+    }
+    .miniBtns{ display:flex; gap:6px; }
+    .miniBtns button{
+      padding:6px 8px;
+      border-radius:10px;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .footerNote{ font-size:11px; color:var(--muted); opacity:.9; }
+
+    @media (max-width: 980px){
+      main{ flex-direction:column; }
+      .right{ width:100%; max-width:none; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand"><span class="dot"></span>Water Polo PlayBook (Web)</div>
+
+    <div class="toolbar">
+      <div class="group">
+        <label>Mode</label>
+        <button id="modeMove" class="active">Select/Move</button>
+        <button id="modeArrow">Arrow</button>
+        <button id="modeCircle">Circle</button>
+        <button id="modeHighlight">Highlight</button>
+        <button id="modeEraser" class="">Eraser</button>
+      </div>
+
+      <div class="group">
+        <label>Color</label>
+        <input id="strokeColor" type="color" value="#69B3E7" />
+        <label>Size</label>
+        <input id="strokeSize" type="range" min="2" max="18" value="6" />
+      </div>
+
+      <div class="group">
+        <button id="undoBtn">Undo</button>
+        <button id="clearBtn" class="danger">Clear All</button>
+      </div>
+
+      <div class="group">
+        <button id="rotateBtn">Rotate Board</button>
+        <button id="pngBtn">Download PNG</button>
+      </div>
+
+      <div class="group">
+        <button id="numbersBtn">Cap Numbers: On</button>
+        <span class="hint" style="padding:0 6px;">(dbl-click token to edit)</span>
+      </div>
+
+      <div class="group">
+        <button id="recordBtn" class="primary">Record</button>
+        <button id="playBtn" class="ok">Play</button>
+        <button id="rewindBtn">Rewind</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="left">
+      <div class="boardShell">
+        <div id="boardWrap">
+          <div class="poolLines">
+            <div class="halfLine"></div>
+            <div class="goalBoxL"></div>
+            <div class="goalBoxR"></div>
+            <div class="twoM left"></div>
+            <div class="twoM right"></div>
+            <div class="fiveM left"></div>
+            <div class="fiveM right"></div>
+          </div>
+
+          <canvas id="drawCanvas"></canvas>
+          <canvas id="uiCanvas"></canvas>
+
+          <div id="tokensLayer" class="tokensLayer"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="panelTitle">Make it amazing</div>
+      <div class="hint">Clean coaching board + shareable plays. Works offline. Publish with GitHub Pages for public use.</div>
+
+      <div class="row">
+        <div class="chip"><input id="toggleHalf" type="checkbox" checked><span>Half line</span></div>
+        <div class="chip"><input id="toggle2m" type="checkbox" checked><span>2m</span></div>
+        <div class="chip"><input id="toggle5m" type="checkbox" checked><span>5m</span></div>
+      </div>
+
+      <div class="row">
+        <div class="chip"><input id="swapLines" type="checkbox"><span>Swap 2m/5m colors</span></div>
+      </div>
+
+      <div class="row">
+        <button id="addBlueBtn">+ Blue</button>
+        <button id="addWhiteBtn">+ White</button>
+        <button id="addBallBtn">+ Ball</button>
+        <button id="removeBtn" class="danger">Remove Selected</button>
+      </div>
+
+      <div class="row">
+        <select id="formationSel">
+          <option value="6v6">Reset: 6v6</option>
+          <option value="6on5">Reset: 6 on 5</option>
+          <option value="5on6">Reset: 5 on 6</option>
+          <option value="empty">Reset: Empty</option>
+        </select>
+        <button id="resetFormationBtn">Reset</button>
+      </div>
+
+      <div class="panelTitle" style="margin-top:6px;">Save / Share</div>
+      <div class="row">
+        <input id="playNameInput" type="text" placeholder="Play name (e.g., 6-on-5 Cross)" />
+        <button id="saveBtn" class="primary">Save</button>
+      </div>
+
+      <div class="row">
+        <button id="exportBtn">Export JSON</button>
+        <button id="importBtn">Import JSON</button>
+      </div>
+
+      <div class="row">
+        <button id="shareBtn" class="ok">Copy Share Link</button>
+      </div>
+
+      <div class="list" id="playsList"></div>
+
+      <div class="footerNote">
+        • Draw: Arrow/Circle/Highlight. • Eraser removes marks you touch. • Record captures token moves + drawings as steps.
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    /***********************
+     * Utilities
+     ***********************/
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const uid = () => Math.random().toString(36).slice(2, 10);
+    const now = () => performance.now();
+
+    function getCanvasPoint(evt, canvas){
+      const rect = canvas.getBoundingClientRect();
+      const x = (evt.clientX - rect.left) * (canvas.width / rect.width);
+      const y = (evt.clientY - rect.top) * (canvas.height / rect.height);
+      return {x,y};
+    }
+
+    function lerp(a,b,t){ return a + (b-a)*t; }
+
+    function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+    // URL-safe base64 helpers
+    function toB64Url(str){
+      return btoa(unescape(encodeURIComponent(str)))
+        .replaceAll("+","-").replaceAll("/","_").replaceAll("=","");
+    }
+    function fromB64Url(b64){
+      const pad = b64.length % 4 ? "=".repeat(4 - (b64.length % 4)) : "";
+      const s = (b64 + pad).replaceAll("-","+").replaceAll("_","/");
+      return decodeURIComponent(escape(atob(s)));
+    }
+
+    /***********************
+     * State
+     ***********************/
+    const state = {
+      mode: "move", // move | arrow | circle | highlight | eraser
+      strokeColor: "#69B3E7",
+      strokeSize: 6,
+      showNumbers: true,
+      isVertical: false,
+
+      tokens: [],
+      marks: [],
+
+      recording: false,
+      recordedSteps: [],
+      stepStartSnapshot: null,
+
+      playing: false,
+      playIndex: 0,
+      playT0: 0,
+      playDurationPerStep: 650,
+      originalForRewind: null,
+
+      selectedTokenId: null,
+
+      showHalf: true,
+      show2m: true,
+      show5m: true,
+      swapped: false,
+    };
+
+    /***********************
+     * DOM
+     ***********************/
+    const boardWrap = document.getElementById("boardWrap");
+    const tokensLayer = document.getElementById("tokensLayer");
+    const drawCanvas = document.getElementById("drawCanvas");
+    const uiCanvas = document.getElementById("uiCanvas");
+    const dctx = drawCanvas.getContext("2d");
+    const uctx = uiCanvas.getContext("2d");
+
+    const modeBtns = {
+      move: document.getElementById("modeMove"),
+      arrow: document.getElementById("modeArrow"),
+      circle: document.getElementById("modeCircle"),
+      highlight: document.getElementById("modeHighlight"),
+      eraser: document.getElementById("modeEraser"),
+    };
+
+    const strokeColorInput = document.getElementById("strokeColor");
+    const strokeSizeInput = document.getElementById("strokeSize");
+
+    const undoBtn = document.getElementById("undoBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const rotateBtn = document.getElementById("rotateBtn");
+    const pngBtn = document.getElementById("pngBtn");
+
+    const numbersBtn = document.getElementById("numbersBtn");
+
+    const recordBtn = document.getElementById("recordBtn");
+    const playBtn = document.getElementById("playBtn");
+    const rewindBtn = document.getElementById("rewindBtn");
+
+    const toggleHalf = document.getElementById("toggleHalf");
+    const toggle2m = document.getElementById("toggle2m");
+    const toggle5m = document.getElementById("toggle5m");
+    const swapLines = document.getElementById("swapLines");
+
+    const addBlueBtn = document.getElementById("addBlueBtn");
+    const addWhiteBtn = document.getElementById("addWhiteBtn");
+    const addBallBtn = document.getElementById("addBallBtn");
+    const removeBtn = document.getElementById("removeBtn");
+
+    const formationSel = document.getElementById("formationSel");
+    const resetFormationBtn = document.getElementById("resetFormationBtn");
+
+    const playNameInput = document.getElementById("playNameInput");
+    const saveBtn = document.getElementById("saveBtn");
+    const playsList = document.getElementById("playsList");
+    const exportBtn = document.getElementById("exportBtn");
+    const importBtn = document.getElementById("importBtn");
+    const shareBtn = document.getElementById("shareBtn");
+
+    // pool line elements
+    const elHalf = boardWrap.querySelector(".halfLine");
+    const el2m = [...boardWrap.querySelectorAll(".twoM")];
+    const el5m = [...boardWrap.querySelectorAll(".fiveM")];
+
+    /***********************
+     * Canvas sizing
+     ***********************/
+    function resizeCanvases(){
+      const rect = boardWrap.getBoundingClientRect();
+      const w = Math.max(2, Math.floor(rect.width * devicePixelRatio));
+      const h = Math.max(2, Math.floor(rect.height * devicePixelRatio));
+      for (const c of [drawCanvas, uiCanvas]){
+        c.width = w;
+        c.height = h;
+      }
+      redrawAll();
+    }
+    new ResizeObserver(resizeCanvases).observe(boardWrap);
+    window.addEventListener("resize", resizeCanvases);
+
+    /***********************
+     * Formations / Tokens
+     ***********************/
+    function formation6v6(){
+      const tokens = [];
+      for (let i=0;i<6;i++){
+        tokens.push({ id: uid(), team:"blue", xPct: 30, yPct: 20 + i*12, num: String(i+1) });
+      }
+      for (let i=0;i<6;i++){
+        tokens.push({ id: uid(), team:"white", xPct: 70, yPct: 20 + i*12, num: String(i+1) });
+      }
+      tokens.push({ id: uid(), team:"ball", xPct: 50, yPct: 50, num: "●" });
+      return tokens;
+    }
+
+    function formation6on5(){
+      // blue attacking left->right (you can rotate)
+      const tokens = [];
+      // 6 attackers spread
+      const spots = [
+        [25, 30],[25, 50],[25, 70],
+        [40, 35],[40, 65],[35, 50] // point-ish
+      ];
+      for (let i=0;i<6;i++){
+        tokens.push({ id: uid(), team:"blue", xPct: spots[i][0], yPct: spots[i][1], num: String(i+1) });
+      }
+      // 5 defenders + goalie-ish
+      const dspots = [
+        [70, 35],[70, 50],[70, 65],[82, 42],[82, 58]
+      ];
+      for (let i=0;i<5;i++){
+        tokens.push({ id: uid(), team:"white", xPct: dspots[i][0], yPct: dspots[i][1], num: String(i+1) });
+      }
+      tokens.push({ id: uid(), team:"ball", xPct: 35, yPct: 50, num: "●" });
+      return tokens;
+    }
+
+    function formation5on6(){
+      const tokens = [];
+      const spotsW = [
+        [70, 30],[70, 50],[70, 70],
+        [60, 35],[60, 65],[65, 50]
+      ];
+      for (let i=0;i<6;i++){
+        tokens.push({ id: uid(), team:"white", xPct: spotsW[i][0], yPct: spotsW[i][1], num: String(i+1) });
+      }
+      const bspots = [
+        [30, 35],[30, 50],[30, 65],[18, 42],[18, 58]
+      ];
+      for (let i=0;i<5;i++){
+        tokens.push({ id: uid(), team:"blue", xPct: bspots[i][0], yPct: bspots[i][1], num: String(i+1) });
+      }
+      tokens.push({ id: uid(), team:"ball", xPct: 65, yPct: 50, num: "●" });
+      return tokens;
+    }
+
+    function formationEmpty(){ return []; }
+
+    function renderTokens(){
+      tokensLayer.innerHTML = "";
+      for (const t of state.tokens){
+        const el = document.createElement("div");
+        el.className = `token ${t.team}`;
+        el.dataset.id = t.id;
+
+        const num = document.createElement("div");
+        num.className = "num";
+        num.textContent = (t.team === "ball") ? "●" : (state.showNumbers ? (t.num || "") : "");
+        el.appendChild(num);
+
+        el.style.left = `${t.xPct}%`;
+        el.style.top = `${t.yPct}%`;
+
+        if (state.selectedTokenId === t.id){
+          el.style.outline = "3px solid rgba(255,255,255,.85)";
+          el.style.outlineOffset = "2px";
+        }
+
+        tokensLayer.appendChild(el);
+      }
+    }
+
+    function updateTokenNumbers(){
+      document.querySelectorAll(".token").forEach(el=>{
+        const id = el.dataset.id;
+        const t = state.tokens.find(x=>x.id===id);
+        if (!t) return;
+        el.querySelector(".num").textContent = (t.team === "ball") ? "●" : (state.showNumbers ? (t.num || "") : "");
+      });
+    }
+
+    /***********************
+     * Drawing
+     ***********************/
+    function clearCanvas(ctx){
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    }
+
+    function drawArrow(ctx, points, color, size){
+      if (!points || points.length < 2) return;
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = color;
+      ctx.lineWidth = size;
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i=1;i<points.length;i++) ctx.lineTo(points[i].x, points[i].y);
+      ctx.stroke();
+
+      const p1 = points[points.length-2];
+      const p2 = points[points.length-1];
+      const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+      const headLen = 14 * devicePixelRatio + size * 0.9;
+
+      ctx.beginPath();
+      ctx.moveTo(p2.x, p2.y);
+      ctx.lineTo(p2.x - headLen*Math.cos(ang - Math.PI/7), p2.y - headLen*Math.sin(ang - Math.PI/7));
+      ctx.moveTo(p2.x, p2.y);
+      ctx.lineTo(p2.x - headLen*Math.cos(ang + Math.PI/7), p2.y - headLen*Math.sin(ang + Math.PI/7));
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawCircle(ctx, cx, cy, r, color, size){
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = size;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawHighlight(ctx, points, color, size){
+      if (!points || points.length < 2) return;
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = color;
+      ctx.lineWidth = size * 2.2;
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i=1;i<points.length;i++) ctx.lineTo(points[i].x, points[i].y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function redrawAll(){
+      clearCanvas(dctx);
+      clearCanvas(uctx);
+      for (const m of state.marks){
+        if (m.type === "arrow") drawArrow(dctx, m.points, m.color, m.size);
+        if (m.type === "circle") drawCircle(dctx, m.cx, m.cy, m.r, m.color, m.size);
+        if (m.type === "highlight") drawHighlight(dctx, m.points, m.color, m.size);
+      }
+    }
+
+    // eraser: remove marks near pointer
+    function distPointToSegment(px,py,x1,y1,x2,y2){
+      const dx=x2-x1, dy=y2-y1;
+      if (dx===0 && dy===0) return Math.hypot(px-x1, py-y1);
+      const t=((px-x1)*dx+(py-y1)*dy)/(dx*dx+dy*dy);
+      const tt=Math.max(0,Math.min(1,t));
+      const cx=x1+tt*dx, cy=y1+tt*dy;
+      return Math.hypot(px-cx, py-cy);
+    }
+
+    function markHitTest(mark, p, radius){
+      if (mark.type === "circle"){
+        const d = Math.abs(Math.hypot(p.x-mark.cx, p.y-mark.cy) - mark.r);
+        return d <= radius;
+      }
+      if (mark.type === "arrow" || mark.type === "highlight"){
+        const pts = mark.points || [];
+        for (let i=1;i<pts.length;i++){
+          if (distPointToSegment(p.x,p.y, pts[i-1].x,pts[i-1].y, pts[i].x,pts[i].y) <= radius) return true;
+        }
+      }
+      return false;
+    }
+
+    /***********************
+     * Recording / Playback
+     ***********************/
+    function snapshotTokens(){
+      return state.tokens.map(t=>({ id:t.id, team:t.team, xPct:t.xPct, yPct:t.yPct, num:t.num }));
+    }
+
+    function applyTokenSnapshot(snap){
+      for (const s of snap){
+        const t = state.tokens.find(x=>x.id===s.id);
+        if (!t) continue;
+        t.xPct = s.xPct; t.yPct = s.yPct; t.num = s.num;
+      }
+      renderTokens();
+    }
+
+    function startRecording(){
+      state.recording = true;
+      state.recordedSteps = [];
+      state.stepStartSnapshot = snapshotTokens();
+      recordBtn.classList.add("active");
+      recordBtn.textContent = "Stop";
+    }
+
+    function stopRecording(){
+      state.recording = false;
+      state.stepStartSnapshot = null;
+      recordBtn.classList.remove("active");
+      recordBtn.textContent = "Record";
+    }
+
+    function addStepFromChanges(changedTokenIds, addedMarks){
+      if (!state.recording) return;
+      if (changedTokenIds.length === 0 && (!addedMarks || addedMarks.length===0)) return;
+
+      const fromSnap = state.stepStartSnapshot || snapshotTokens();
+      const toSnap = snapshotTokens();
+
+      const tokenMoves = [];
+      for (const id of changedTokenIds){
+        const from = fromSnap.find(t=>t.id===id);
+        const to = toSnap.find(t=>t.id===id);
+        if (!from || !to) continue;
+        tokenMoves.push({ id, from:{xPct:from.xPct,yPct:from.yPct}, to:{xPct:to.xPct,yPct:to.yPct} });
+      }
+
+      state.recordedSteps.push({
+        t: Date.now(),
+        tokenMoves,
+        addedMarks: addedMarks ? deepClone(addedMarks) : []
+      });
+
+      state.stepStartSnapshot = snapshotTokens();
+    }
+
+    function startPlayback(){
+      if (state.playing) return;
+      if (!state.recordedSteps || state.recordedSteps.length === 0) return;
+
+      state.playing = true;
+      state.playIndex = 0;
+      state.playT0 = now();
+      state.originalForRewind = { tokens: snapshotTokens(), marks: deepClone(state.marks) };
+
+      playBtn.classList.add("active");
+      playBtn.textContent = "Pause";
+      playbackLoop();
+    }
+
+    function pausePlayback(){
+      state.playing = false;
+      playBtn.classList.remove("active");
+      playBtn.textContent = "Play";
+    }
+
+    function rewindPlayback(){
+      pausePlayback();
+      state.playIndex = 0;
+      if (state.originalForRewind){
+        applyTokenSnapshot(state.originalForRewind.tokens);
+        state.marks = deepClone(state.originalForRewind.marks);
+        redrawAll();
+      }
+    }
+
+    function playbackLoop(){
+      if (!state.playing) return;
+
+      const step = state.recordedSteps[state.playIndex];
+      if (!step){ pausePlayback(); return; }
+
+      const tNow = now();
+      const t = clamp((tNow - state.playT0) / state.playDurationPerStep, 0, 1);
+
+      for (const mv of step.tokenMoves){
+        const tok = state.tokens.find(x=>x.id===mv.id);
+        if (!tok) continue;
+        tok.xPct = lerp(mv.from.xPct, mv.to.xPct, t);
+        tok.yPct = lerp(mv.from.yPct, mv.to.yPct, t);
+      }
+      renderTokens();
+
+      if (t >= 1){
+        for (const mv of step.tokenMoves){
+          const tok = state.tokens.find(x=>x.id===mv.id);
+          if (!tok) continue;
+          tok.xPct = mv.to.xPct;
+          tok.yPct = mv.to.yPct;
+        }
+        if (step.addedMarks && step.addedMarks.length){
+          for (const m of step.addedMarks) state.marks.push(m);
+          redrawAll();
+        }
+
+        state.playIndex += 1;
+        state.playT0 = now();
+      }
+
+      requestAnimationFrame(playbackLoop);
+    }
+
+    /***********************
+     * Mode switching
+     ***********************/
+    function setMode(m){
+      state.mode = m;
+      for (const k of Object.keys(modeBtns)){
+        modeBtns[k].classList.toggle("active", k === m);
+      }
+    }
+
+    modeBtns.move.addEventListener("click", ()=>setMode("move"));
+    modeBtns.arrow.addEventListener("click", ()=>setMode("arrow"));
+    modeBtns.circle.addEventListener("click", ()=>setMode("circle"));
+    modeBtns.highlight.addEventListener("click", ()=>setMode("highlight"));
+    modeBtns.eraser.addEventListener("click", ()=>setMode("eraser"));
+
+    strokeColorInput.addEventListener("input", (e)=>{ state.strokeColor = e.target.value; });
+    strokeSizeInput.addEventListener("input", (e)=>{ state.strokeSize = Number(e.target.value); });
+
+    rotateBtn.addEventListener("click", ()=>{
+      state.isVertical = !state.isVertical;
+      boardWrap.classList.toggle("vertical", state.isVertical);
+      resizeCanvases();
+    });
+
+    numbersBtn.addEventListener("click", ()=>{
+      state.showNumbers = !state.showNumbers;
+      numbersBtn.textContent = `Cap Numbers: ${state.showNumbers ? "On" : "Off"}`;
+      updateTokenNumbers();
+    });
+
+    /***********************
+     * Pool toggles + swap colors
+     ***********************/
+    function applyLineVisibility(){
+      elHalf.style.display = state.showHalf ? "block" : "none";
+      el2m.forEach(x=> x.style.display = state.show2m ? "block" : "none");
+      el5m.forEach(x=> x.style.display = state.show5m ? "block" : "none");
+    }
+
+    function applySwap(){
+      // swap CSS variables
+      const root = document.documentElement;
+      if (state.swapped){
+        root.style.setProperty("--twoM", "rgba(255,77,77,.88)");
+        root.style.setProperty("--fiveM", "rgba(255,199,44,.92)");
+      } else {
+        root.style.setProperty("--twoM", "rgba(255,199,44,.92)");
+        root.style.setProperty("--fiveM", "rgba(255,77,77,.88)");
+      }
+    }
+
+    toggleHalf.addEventListener("change", ()=>{ state.showHalf = toggleHalf.checked; applyLineVisibility(); });
+    toggle2m.addEventListener("change", ()=>{ state.show2m = toggle2m.checked; applyLineVisibility(); });
+    toggle5m.addEventListener("change", ()=>{ state.show5m = toggle5m.checked; applyLineVisibility(); });
+
+    swapLines.addEventListener("change", ()=>{
+      state.swapped = swapLines.checked;
+      applySwap();
+    });
+
+    /***********************
+     * Undo / Clear / PNG
+     ***********************/
+    undoBtn.addEventListener("click", ()=>{
+      state.marks.pop();
+      redrawAll();
+    });
+
+    clearBtn.addEventListener("click", ()=>{
+      state.marks = [];
+      state.recordedSteps = [];
+      redrawAll();
+    });
+
+    pngBtn.addEventListener("click", ()=>{
+      // Create a composite image: pool + drawings + tokens
+      const rect = boardWrap.getBoundingClientRect();
+      const w = Math.floor(rect.width * devicePixelRatio);
+      const h = Math.floor(rect.height * devicePixelRatio);
+
+      const tmp = document.createElement("canvas");
+      tmp.width = w; tmp.height = h;
+      const ctx = tmp.getContext("2d");
+
+      // background gradient like the pool
+      const grad = ctx.createLinearGradient(0,0,0,h);
+      grad.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue("--poolTop").trim() || "#0e4ea8");
+      grad.addColorStop(1, getComputedStyle(document.documentElement).getPropertyValue("--poolBot").trim() || "#0b3f86");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0,0,w,h);
+
+      // draw pool border/lines roughly by sampling actual DOM via drawImage isn't possible without rasterizing.
+      // Instead: use the drawCanvas + token positions; the pool markings remain visible in screenshot visually.
+      // We'll just draw the marks + tokens onto a clean background (looks great for sharing tactics).
+
+      // draw marks
+      ctx.drawImage(drawCanvas, 0, 0);
+
+      // draw tokens (simple circles)
+      for (const t of state.tokens){
+        const x = (t.xPct/100) * w;
+        const y = (t.yPct/100) * h;
+
+        if (t.team === "ball"){
+          ctx.beginPath();
+          ctx.fillStyle = "rgba(255,199,44,.98)";
+          ctx.arc(x,y, 14*devicePixelRatio, 0, Math.PI*2);
+          ctx.fill();
+          ctx.lineWidth = 2*devicePixelRatio;
+          ctx.strokeStyle = "rgba(255,255,255,.75)";
+          ctx.stroke();
+          continue;
+        }
+
+        ctx.beginPath();
+        ctx.fillStyle = (t.team==="blue") ? "rgba(105,179,231,.92)" : "rgba(246,247,251,.95)";
+        ctx.arc(x,y, 22*devicePixelRatio, 0, Math.PI*2);
+        ctx.fill();
+        ctx.lineWidth = 2*devicePixelRatio;
+        ctx.strokeStyle = "rgba(255,255,255,.65)";
+        ctx.stroke();
+
+        if (state.showNumbers){
+          ctx.fillStyle = (t.team==="blue") ? "#081226" : "#0b1220";
+          ctx.font = `${16*devicePixelRatio}px Arial`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(t.num || "", x, y);
+        }
+      }
+
+      const a = document.createElement("a");
+      a.download = "waterpolo-play.png";
+      a.href = tmp.toDataURL("image/png");
+      a.click();
+    });
+
+    /***********************
+     * Add/remove tokens + select token
+     ***********************/
+    function addToken(team){
+      const numDefault = (team==="ball") ? "●" : String((state.tokens.filter(t=>t.team===team).length % 13) + 1);
+      state.tokens.push({ id: uid(), team, xPct: 50, yPct: 50, num: numDefault });
+      renderTokens();
+    }
+
+    addBlueBtn.addEventListener("click", ()=> addToken("blue"));
+    addWhiteBtn.addEventListener("click", ()=> addToken("white"));
+    addBallBtn.addEventListener("click", ()=> addToken("ball"));
+
+    removeBtn.addEventListener("click", ()=>{
+      if (!state.selectedTokenId) return;
+      state.tokens = state.tokens.filter(t=>t.id !== state.selectedTokenId);
+      state.selectedTokenId = null;
+      renderTokens();
+    });
+
+    tokensLayer.addEventListener("pointerdown", (evt)=>{
+      const tokenEl = evt.target.closest(".token");
+      if (!tokenEl) { state.selectedTokenId = null; renderTokens(); return; }
+      state.selectedTokenId = tokenEl.dataset.id;
+      renderTokens();
+    });
+
+    // double click token to edit cap number
+    tokensLayer.addEventListener("dblclick", (evt)=>{
+      const tokenEl = evt.target.closest(".token");
+      if (!tokenEl) return;
+      const t = state.tokens.find(x=>x.id===tokenEl.dataset.id);
+      if (!t || t.team==="ball") return;
+      const val = prompt("Cap number:", t.num || "");
+      if (val === null) return;
+      t.num = val.trim();
+      renderTokens();
+    });
+
+    resetFormationBtn.addEventListener("click", ()=>{
+      const v = formationSel.value;
+      state.selectedTokenId = null;
+      state.marks = [];
+      state.recordedSteps = [];
+      if (v==="6v6") state.tokens = formation6v6();
+      if (v==="6on5") state.tokens = formation6on5();
+      if (v==="5on6") state.tokens = formation5on6();
+      if (v==="empty") state.tokens = formationEmpty();
+      redrawAll();
+      renderTokens();
+    });
+
+    /***********************
+     * Drag tokens
+     ***********************/
+    let drag = null;
+
+    function pointerToPct(evt){
+      const rect = tokensLayer.getBoundingClientRect();
+      const x = clamp((evt.clientX - rect.left) / rect.width, 0, 1);
+      const y = clamp((evt.clientY - rect.top) / rect.height, 0, 1);
+      return { xPct: x*100, yPct: y*100 };
+    }
+
+    tokensLayer.addEventListener("pointerdown", (evt)=>{
+      const target = evt.target.closest(".token");
+      if (!target) return;
+
+      if (state.mode !== "move") return;
+      if (state.playing) return;
+
+      const id = target.dataset.id;
+      const tok = state.tokens.find(t=>t.id===id);
+      if (!tok) return;
+
+      tokensLayer.setPointerCapture(evt.pointerId);
+      drag = { id, changed: false };
+    });
+
+    tokensLayer.addEventListener("pointermove", (evt)=>{
+      if (!drag) return;
+      const tok = state.tokens.find(t=>t.id===drag.id);
+      if (!tok) return;
+
+      const p = pointerToPct(evt);
+      tok.xPct = p.xPct;
+      tok.yPct = p.yPct;
+      drag.changed = true;
+      renderTokens();
+    });
+
+    tokensLayer.addEventListener("pointerup", ()=>{
+      if (!drag) return;
+      const id = drag.id;
+      const changed = drag.changed;
+      drag = null;
+
+      if (state.recording && changed){
+        addStepFromChanges([id], []);
+      }
+    });
+
+    /***********************
+     * Drawing interactions
+     ***********************/
+    let drawing = null;
+    let marksAddedThisGesture = [];
+
+    function beginDraw(evt){
+      if (state.mode === "move") return;
+      if (state.playing) return;
+
+      const p = getCanvasPoint(evt, drawCanvas);
+
+      // eraser mode: delete marks near pointer
+      if (state.mode === "eraser"){
+        const hitRadius = 14 * devicePixelRatio;
+        const before = state.marks.length;
+        state.marks = state.marks.filter(m => !markHitTest(m, p, hitRadius));
+        if (state.marks.length !== before) redrawAll();
+        return;
+      }
+
+      marksAddedThisGesture = [];
+
+      if (state.mode === "arrow"){
+        drawing = { type:"arrow", color: state.strokeColor, size: state.strokeSize*devicePixelRatio, points:[p] };
+      } else if (state.mode === "highlight"){
+        drawing = { type:"highlight", color: state.strokeColor, size: state.strokeSize*devicePixelRatio, points:[p] };
+      } else if (state.mode === "circle"){
+        drawing = { type:"circle", color: state.strokeColor, size: state.strokeSize*devicePixelRatio, cx:p.x, cy:p.y, r:1, start:p };
+      }
+
+      redrawAll();
+      previewDraw();
+    }
+
+    function updateDraw(evt){
+      if (!drawing) return;
+      const p = getCanvasPoint(evt, drawCanvas);
+
+      if (drawing.type === "arrow" || drawing.type === "highlight"){
+        drawing.points.push(p);
+      } else if (drawing.type === "circle"){
+        const dx = p.x - drawing.start.x;
+        const dy = p.y - drawing.start.y;
+        drawing.r = Math.sqrt(dx*dx + dy*dy);
+      }
+
+      redrawAll();
+      previewDraw();
+    }
+
+    function endDraw(){
+      if (!drawing) return;
+
+      let commit = false;
+      if ((drawing.type === "arrow" || drawing.type === "highlight") && drawing.points.length >= 2) commit = true;
+      if (drawing.type === "circle" && drawing.r > 3*devicePixelRatio) commit = true;
+
+      if (commit){
+        const mark = deepClone(drawing);
+        state.marks.push(mark);
+        marksAddedThisGesture.push(mark);
+        redrawAll();
+
+        if (state.recording){
+          addStepFromChanges([], marksAddedThisGesture);
+        }
+      } else {
+        redrawAll();
+      }
+
+      drawing = null;
+      marksAddedThisGesture = [];
+      clearCanvas(uctx);
+    }
+
+    function previewDraw(){
+      clearCanvas(uctx);
+      if (!drawing) return;
+
+      if (drawing.type === "arrow") drawArrow(uctx, drawing.points, drawing.color, drawing.size);
+      if (drawing.type === "highlight") drawHighlight(uctx, drawing.points, drawing.color, drawing.size);
+      if (drawing.type === "circle") drawCircle(uctx, drawing.cx, drawing.cy, drawing.r, drawing.color, drawing.size);
+    }
+
+    boardWrap.addEventListener("pointerdown", (evt)=>{
+      if (evt.target.closest(".token")) return;
+      boardWrap.setPointerCapture(evt.pointerId);
+      beginDraw(evt);
+    });
+    boardWrap.addEventListener("pointermove", (evt)=> updateDraw(evt));
+    boardWrap.addEventListener("pointerup", ()=> endDraw());
+    boardWrap.addEventListener("pointercancel", ()=> endDraw());
+
+    /***********************
+     * Record / Play / Rewind
+     ***********************/
+    recordBtn.addEventListener("click", ()=>{
+      if (state.playing) return;
+      if (!state.recording) startRecording();
+      else stopRecording();
+    });
+
+    playBtn.addEventListener("click", ()=>{
+      if (!state.playing) startPlayback();
+      else pausePlayback();
+    });
+
+    rewindBtn.addEventListener("click", rewindPlayback);
+
+    /***********************
+     * Save / Load plays (local)
+     ***********************/
+    const STORAGE_KEY = "wp_playbook_plays_v2";
+
+    function loadAllPlays(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+      catch{ return []; }
+    }
+    function saveAllPlays(plays){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(plays));
+    }
+
+    function currentPlayState(){
+      return {
+        version: 2,
+        savedAt: new Date().toISOString(),
+        isVertical: state.isVertical,
+        showNumbers: state.showNumbers,
+        showHalf: state.showHalf,
+        show2m: state.show2m,
+        show5m: state.show5m,
+        swapped: state.swapped,
+        tokens: snapshotTokens(),
+        marks: deepClone(state.marks),
+        recordedSteps: deepClone(state.recordedSteps),
+      };
+    }
+
+    function applyPlayState(ps){
+      state.isVertical = !!ps.isVertical;
+      state.showNumbers = (ps.showNumbers !== false);
+      state.showHalf = (ps.showHalf !== false);
+      state.show2m = (ps.show2m !== false);
+      state.show5m = (ps.show5m !== false);
+      state.swapped = !!ps.swapped;
+
+      boardWrap.classList.toggle("vertical", state.isVertical);
+      numbersBtn.textContent = `Cap Numbers: ${state.showNumbers ? "On" : "Off"}`;
+
+      toggleHalf.checked = state.showHalf;
+      toggle2m.checked = state.show2m;
+      toggle5m.checked = state.show5m;
+      swapLines.checked = state.swapped;
+
+      applyLineVisibility();
+      applySwap();
+
+      state.tokens = ps.tokens || formation6v6();
+      state.marks = ps.marks || [];
+      state.recordedSteps = ps.recordedSteps || [];
+
+      state.selectedTokenId = null;
+      renderTokens();
+      redrawAll();
+      resizeCanvases();
+    }
+
+    function refreshPlaysList(){
+      const plays = loadAllPlays();
+      playsList.innerHTML = "";
+      if (plays.length === 0){
+        playsList.innerHTML = `<div class="hint">No saved plays yet. Save one above.</div>`;
+        return;
+      }
+
+      for (const p of plays.sort((a,b)=> (b.savedAt||"").localeCompare(a.savedAt||""))){
+        const row = document.createElement("div");
+        row.className = "playItem";
+
+        const name = document.createElement("div");
+        name.className = "playName";
+        name.textContent = p.name || "Untitled";
+
+        const btns = document.createElement("div");
+        btns.className = "miniBtns";
+
+        const load = document.createElement("button");
+        load.textContent = "Load";
+        load.addEventListener("click", ()=>{
+          pausePlayback();
+          stopRecording();
+          applyPlayState(p.data);
+        });
+
+        const del = document.createElement("button");
+        del.textContent = "Delete";
+        del.classList.add("danger");
+        del.addEventListener("click", ()=>{
+          const plays2 = loadAllPlays().filter(x=>x.id !== p.id);
+          saveAllPlays(plays2);
+          refreshPlaysList();
+        });
+
+        btns.appendChild(load);
+        btns.appendChild(del);
+
+        row.appendChild(name);
+        row.appendChild(btns);
+        playsList.appendChild(row);
+      }
+    }
+
+    saveBtn.addEventListener("click", ()=>{
+      const name = (playNameInput.value || "").trim() || `Play ${new Date().toLocaleString()}`;
+      const plays = loadAllPlays();
+      plays.push({ id: uid(), name, savedAt: new Date().toISOString(), data: currentPlayState() });
+      saveAllPlays(plays);
+      refreshPlaysList();
+      playNameInput.value = "";
+    });
+
+    exportBtn.addEventListener("click", async ()=>{
+      const json = JSON.stringify(currentPlayState(), null, 2);
+      try{
+        await navigator.clipboard.writeText(json);
+        alert("Export JSON copied to clipboard ✅");
+      }catch{
+        prompt("Copy your JSON:", json);
+      }
+    });
+
+    importBtn.addEventListener("click", ()=>{
+      const json = prompt("Paste exported JSON here:");
+      if (!json) return;
+      try{
+        const data = JSON.parse(json);
+        pausePlayback();
+        stopRecording();
+        applyPlayState(data);
+      }catch{
+        alert("Invalid JSON.");
+      }
+    });
+
+    /***********************
+     * Share link (encodes play into URL)
+     ***********************/
+    shareBtn.addEventListener("click", async ()=>{
+      const payload = toB64Url(JSON.stringify(currentPlayState()));
+      const url = new URL(window.location.href);
+      url.hash = "play=" + payload;
+
+      try{
+        await navigator.clipboard.writeText(url.toString());
+        alert("Share link copied ✅");
+      }catch{
+        prompt("Copy this link:", url.toString());
+      }
+    });
+
+    function loadFromHashIfPresent(){
+      const h = window.location.hash || "";
+      const m = h.match(/play=([^&]+)/);
+      if (!m) return false;
+      try{
+        const decoded = fromB64Url(m[1]);
+        const data = JSON.parse(decoded);
+        applyPlayState(data);
+        return true;
+      }catch{
+        return false;
+      }
+    }
+
+    /***********************
+     * Init
+     ***********************/
+    function init(){
+      setMode("move");
+      state.strokeColor = strokeColorInput.value;
+      state.strokeSize = Number(strokeSizeInput.value);
+
+      state.tokens = formation6v6();
+      renderTokens();
+      resizeCanvases();
+
+      applyLineVisibility();
+      applySwap();
+      refreshPlaysList();
+
+      // if someone opened a share link
+      loadFromHashIfPresent();
+    }
+
+    init();
+  </script>
+</body>
+</html>
